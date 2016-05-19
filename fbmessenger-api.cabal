@@ -1,8 +1,8 @@
-name:                haskell-fb-messenger-api
+name:                fbmessenger-api
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            https://github.com/mseri/haskell-fb-messenger-api#readme
+homepage:            https://github.com/mseri/fbmessenger-api#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Marcello Seri
@@ -23,23 +23,23 @@ library
                      , warp
   default-language:    Haskell2010
 
-executable haskell-fb-messenger-api-exe
+executable fbmessenger-api-exe
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , haskell-fb-messenger-api
+                     , fbmessenger-api
   default-language:    Haskell2010
 
-test-suite haskell-fb-messenger-api-test
+test-suite fbmessenger-api-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
-                     , haskell-fb-messenger-api
+                     , fbmessenger-api
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 source-repository head
   type:     git
-  location: https://github.com/mseri/haskell-fb-messenger-api
+  location: https://mseri@bitbucket.org/bad4ss/haskell-fb-messenger-api.git
