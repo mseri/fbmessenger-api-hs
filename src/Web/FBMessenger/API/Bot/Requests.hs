@@ -84,7 +84,9 @@ instance FromJSON SendTextMessageRequest where
   parseJSON = parseJsonDrop 8
 
 
--- TODO: use message.attachment for StructuredMessages -> https://developers.facebook.com/docs/messenger-platform/send-api-reference#request
+-- TODO: use message.attachment for StructuredMessages 
+--       see https://developers.facebook.com/docs/messenger-platform/send-api-reference#request
+-- Consider to reimplement separating by hand all the various possible requests (image, and the three templates)
 
 -- | Type of attachment for a structured message
 data AttachmentType = AttachmentImage 
