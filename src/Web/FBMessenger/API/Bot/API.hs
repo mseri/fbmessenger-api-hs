@@ -39,7 +39,8 @@ graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "v2.6/me"
 -- | Messenger Platform Bot API
 type FBMessengerBotAPI = 
          GraphAPIAccessToken :> "messages" 
-         :> Post '[JSON] SendTextMessageRequest
+         :> ReqBody '[JSON] SendTextMessageRequest
+         :> Post '[JSON] MessageResponse
     :<|> GraphAPIAccessToken :> "subscribed_apps"
          :> Post '[JSON] SubscriptionResponse
     

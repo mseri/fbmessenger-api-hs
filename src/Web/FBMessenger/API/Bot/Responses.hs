@@ -5,9 +5,11 @@
 {-# LANGUAGE TypeOperators              #-}
 
 -- | This module contains responses from Messenger Platform Bot API
-module Web.FBMessenger.API.Bot.Responses (
-    SubscriptionResponse (..)
-) where
+module Web.FBMessenger.API.Bot.Responses 
+  ( -- * Types 
+    MessageResponse (..)
+  , SubscriptionResponse (..)
+  ) where
 
 import           Data.Aeson
 import           Data.Aeson.Types
@@ -31,3 +33,16 @@ instance ToJSON SubscriptionResponse where
 
 instance FromJSON SubscriptionResponse where
   parseJSON = parseJsonDrop 13
+
+-- | This object contais the response after a message has been succesfully sent 
+-- TODO: understand how to implement the errors: https://developers.facebook.com/docs/messenger-platform/send-api-reference#errors
+data MessageResponse = MessageResponse 
+  { message_response_recipient_id :: Text
+  , message_response_message_id :: Text
+  } deriving (Show, Generic)
+
+instance ToJSON MessageResponse where
+  toJSON = toJsonDrop 17
+
+instance FromJSON MessageResponse where
+  parseJSON = parseJsonDrop 17

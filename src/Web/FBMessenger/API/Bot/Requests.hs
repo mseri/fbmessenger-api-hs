@@ -24,7 +24,7 @@ import           GHC.TypeLits
 import           Web.FBMessenger.API.Bot.Data
 import           Web.FBMessenger.API.Bot.JsonExt
 
--- TODO: use message.attachment for StructuredMessages 
+-- TODO: use message.attachment for StructuredMessages -> https://developers.facebook.com/docs/messenger-platform/send-api-reference#request
 
 -- | This object represents the 'messages' request
 data SendTextMessageRequest = SendTextMessageRequest
