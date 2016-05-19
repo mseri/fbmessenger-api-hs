@@ -39,7 +39,7 @@ type GraphAPIAccessToken = QueryParam "access_token" Token
 
 -- from Servant.Client
 graphAPIBaseUrl :: BaseUrl
-graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "v2.6/me"
+graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "/v2.6/me"
 
 -- | Messenger Platform Bot API
 type FBMessengerBotAPI = 
