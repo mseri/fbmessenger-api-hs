@@ -6,6 +6,19 @@ High-level bindings to the Messenger Platform API based on [servant](https://has
 
 ... todo ...
 
+Run `stack ghci` then copy and paste the following
+
+    :m +Network.HTTP.Client
+    :m +Network.HTTP.Client.TLS
+    :m +Data.Text
+
+    let manager = newManager tlsManagerSettings
+    manager >>= \m -> subscribedApps (Just $ Token $ Data.Text.pack "souncazzo") m
+
+You should get the response: 
+
+    Left (FailureResponse {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseContentType = application/json, responseBody = "{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"ESxHmUos2B+\"}}"})
+
 # Contribution
 
 1. Fork repository
