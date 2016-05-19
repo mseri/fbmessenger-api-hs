@@ -46,6 +46,9 @@ type FBMessengerBotAPI =
          GraphAPIAccessToken :> "messages" 
          :> ReqBody '[JSON] SendTextMessageRequest
          :> Post '[JSON] MessageResponse
+    :<|> GraphAPIAccessToken :> "messages" 
+         :> ReqBody '[JSON] SendStructuredMessageRequest
+         :> Post '[JSON] MessageResponse
     :<|> GraphAPIAccessToken :> "subscribed_apps"
          :> Post '[JSON] SubscriptionResponse
     
@@ -54,14 +57,20 @@ api :: Proxy FBMessengerBotAPI
 api = Proxy
 
 sendTextMessage_ :: Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
+sendStructuredMessage_ :: Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
 subscribedApps_  :: Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO SubscriptionResponse
 
 sendTextMessage_
+  :<|> sendStructuredMessage_
   :<|> subscribedApps_ = client api
 
--- | Use this method to send text messages. On success, the sent 'Message' is returned.
+-- | Use this method to send text messages. On success, minor informations on the sent message are returned.
 sendTextMessage :: Maybe Token -> SendTextMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendTextMessage = run graphAPIBaseUrl sendTextMessage_
+
+-- | Use this method to send structured messages. On success, minor informations on the sent message are returned.
+sendStructuredMessage :: Maybe Token -> SendStructuredMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
+sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 
 -- | A simple method for testing your bot's auth token. Requires no parameters.
 --   Returns a simple object containing a boolean value indicating if the token is correctly registered.
