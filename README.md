@@ -1,8 +1,24 @@
 # FBMessenger API
 
-High-level bindings to the Messenger Platform API based on [servant](https://haskell-servant.github.io/) library. We try to maintain the structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
+High-level bindings to the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform/) based on [servant](https://haskell-servant.github.io/) library.
+We try to maintain the structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
 
 # Usage
+
+Before being able to test and use the bot, you will need to verify your key.
+
+> NOTE: I attach for now the nodejs example. We will have to provide a simple Haskell sample implementation. 
+
+```{.js}
+// Node.js Example
+app.get('/webhook', function (req, res) {
+  if (req.query['hub.verify_token'] === <YOUR_VERIFY_TOKEN>) {
+    res.send(req.query['hub.challenge']);
+  } else {
+    res.send('Error, wrong validation token');    
+  }
+});
+```
 
 ... todo ...
 
@@ -38,5 +54,7 @@ _(this will need review)_
 
 # TODO
 
-- Still everything!
+- Webhooks API (NOTE: the body for these will be an array of an appropriate sum type... annoying)
+- Send API
+- Tests
 - Set up Travis or whatever for testing
