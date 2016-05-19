@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveGeneric              #-}
+-- {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeOperators              #-}
@@ -7,6 +7,7 @@
 module Web.FBMessenger.API.Bot.API 
   ( -- * Functions
     sendTextMessage
+  , sendStructuredMessage
   , subscribedApps
     -- * API
   , FBMessengerBotAPI
@@ -29,6 +30,7 @@ import           Servant.Client
 import           Web.FBMessenger.API.Bot.Requests
 import           Web.FBMessenger.API.Bot.Responses
 
+
 -- | Messenger Platform PAGE_ACCESS_TOKEN
 newtype Token = Token Text
    deriving (Show, Eq, Ord, ToHttpApiData, FromHttpApiData)
@@ -37,9 +39,11 @@ newtype Token = Token Text
 -- NOTE: QueryParam here gives us a Maybe Token
 type GraphAPIAccessToken = QueryParam "access_token" Token
 
--- from Servant.Client
+
+-- Servant.Client.BaseUrl
 graphAPIBaseUrl :: BaseUrl
 graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "/v2.6/me"
+
 
 -- | Messenger Platform Bot API
 type FBMessengerBotAPI = 
@@ -51,7 +55,8 @@ type FBMessengerBotAPI =
          :> Post '[JSON] MessageResponse
     :<|> GraphAPIAccessToken :> "subscribed_apps"
          :> Post '[JSON] SubscriptionResponse
-    
+
+
 -- | Proxy for Messenger Platform Bot API
 api :: Proxy FBMessengerBotAPI
 api = Proxy
@@ -63,6 +68,7 @@ subscribedApps_  :: Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO
 sendTextMessage_
   :<|> sendStructuredMessage_
   :<|> subscribedApps_ = client api
+
 
 -- | Use this method to send text messages. On success, minor informations on the sent message are returned.
 sendTextMessage :: Maybe Token -> SendTextMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
@@ -76,6 +82,7 @@ sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 --   Returns a simple object containing a boolean value indicating if the token is correctly registered.
 subscribedApps :: Maybe Token -> Manager -> IO (Either ServantError SubscriptionResponse)
 subscribedApps token manager = runExceptT $ subscribedApps_ token manager graphAPIBaseUrl
+
 
 run :: BaseUrl -> (Maybe Token -> a -> Manager -> BaseUrl -> ExceptT ServantError IO b) -> Maybe Token -> a -> Manager -> IO (Either ServantError b)
 run b e t r m = runExceptT $ e t r m b

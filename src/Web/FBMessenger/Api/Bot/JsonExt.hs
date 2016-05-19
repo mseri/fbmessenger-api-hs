@@ -1,9 +1,7 @@
 {-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
-{-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE FlexibleContexts  #-}
 
 -- | This module contains helper functions to work with JSON
