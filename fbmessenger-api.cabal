@@ -7,7 +7,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Marcello Seri
 maintainer:          marcello.seri@gmail.com
-copyright:           2016 Marcello Seri
+copyright:           2016 Marcello Seri, Federico Rampazzo
 category:            Web
 build-type:          Simple
 -- extra-source-files:
@@ -15,9 +15,16 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
+  ghc-options:         -Wall -fwarn-tabs
   exposed-modules:     Lib
+                     , Web.FBMessenger.API.Bot
+                     , Web.FBMessenger.API.Bot.API
+                     , Web.FBMessenger.API.Bot.Data
+                     , Web.FBMessenger.API.Bot.Responses
+                     , Web.FBMessenger.API.Bot.Requests
   other-modules:       Web.FBMessenger.API.Bot.JsonExt
   build-depends:       base >= 4.7 && < 5
+                     -- below this line in alphabetical order
                      , aeson
                      , bytestring
                      , servant == 0.7.*
