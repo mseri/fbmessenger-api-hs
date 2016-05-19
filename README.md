@@ -27,4 +27,3 @@ _(this will need review)_
 
 - Still everything!
 - Set up Travis or whatever for testing
-- Remove `servant-server`, `wai`, `warp` from the dependencies (both from the cabal file and `stack.yaml`. Now they are used only for compiling `Lib.hs` that is just a stub to use as playground.

@@ -16,8 +16,7 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   ghc-options:         -Wall -fwarn-tabs
-  exposed-modules:     Lib
-                     , Web.FBMessenger.API.Bot
+  exposed-modules:     Web.FBMessenger.API.Bot
                      , Web.FBMessenger.API.Bot.API
                      , Web.FBMessenger.API.Bot.Data
                      , Web.FBMessenger.API.Bot.Responses
@@ -27,21 +26,11 @@ library
                      -- below this line in alphabetical order
                      , aeson
                      , bytestring
+                     , http-client
                      , servant == 0.7.*
                      , servant-client == 0.7.*
                      , text
                      , transformers
-                     , servant-server == 0.7.*
-                     , wai
-                     , warp
-  default-language:    Haskell2010
-
-executable fbmessenger-api-exe
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , fbmessenger-api
   default-language:    Haskell2010
 
 test-suite fbmessenger-api-test
