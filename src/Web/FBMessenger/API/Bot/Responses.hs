@@ -9,6 +9,8 @@ module Web.FBMessenger.API.Bot.Responses
   ( -- * Types 
     MessageResponse (..)
   , SubscriptionResponse (..)
+  , UserProfileResponse
+  , WelcomeMessageResponse
   ) where
 
 import           Data.Aeson
@@ -34,7 +36,6 @@ instance FromJSON SubscriptionResponse where
   parseJSON = parseJsonDrop 13
 
 -- | This object contais the response after a message has been succesfully sent 
--- TODO: understand how to implement the errors: https://developers.facebook.com/docs/messenger-platform/send-api-reference#errors
 data MessageResponse = MessageResponse 
   { message_response_recipient_id :: Text
   , message_response_message_id :: Text
@@ -45,3 +46,14 @@ instance ToJSON MessageResponse where
 
 instance FromJSON MessageResponse where
   parseJSON = parseJsonDrop 17
+
+-- TODO: implement those
+data UserProfileResponse = UserProfileResponse {} deriving (Show, Generic)
+instance ToJSON UserProfileResponse
+instance FromJSON UserProfileResponse
+
+data WelcomeMessageResponse = WelcomeMessageResponse {} deriving (Show, Generic)
+instance ToJSON WelcomeMessageResponse
+instance FromJSON WelcomeMessageResponse
+
+-- TODO: add errors linter: https://developers.facebook.com/docs/messenger-platform/send-api-reference#errors

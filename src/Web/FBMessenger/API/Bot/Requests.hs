@@ -14,6 +14,7 @@ module Web.FBMessenger.API.Bot.Requests
     , NotificationType (..)
     , SendTextMessageRequest (..)
     , SendStructuredMessageRequest (..)
+    , WelcomeMessageRequest (..)
     -- * Functions
     , makeBubbleElement
     , makeButtonTemplateMessageRequest
@@ -252,8 +253,15 @@ instance FromJSON StructuredMessage where
     parseJSON = parseJsonDrop 19
 
 
+-- TODO: implement this
+data WelcomeMessageRequest = WelcomeMessageRequest {} deriving (Show, Generic)
+instance ToJSON WelcomeMessageRequest
+instance FromJSON WelcomeMessageRequest
+
 -- TODO: implement constructors for
 -- receiptTemplateMessage
+-- welcomeMessageRequest
+-- deleteWelcomeMessageRequest
 
 -- | Take reciptient id (optional) or phone_number (optional) and return a Maybe Recipient object.
 --   Return Nothing when values are either both (Just _) or both Nothing.  

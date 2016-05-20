@@ -22,6 +22,7 @@ import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Proxy
 import           Data.Text (Text)
+import qualified Data.Text as T
 import           GHC.Generics
 import           GHC.TypeLits
 import           Network.HTTP.Client (Manager)
@@ -55,19 +56,33 @@ type FBMessengerSendAPI =
          :> Post '[JSON] MessageResponse
     :<|> GraphAPIAccessToken :> "subscribed_apps"
          :> Post '[JSON] SubscriptionResponse
+    :<|> GraphAPIAccessToken :> Capture "page_id" Text :> "thread_settings"
+         :> ReqBody '[JSON] WelcomeMessageRequest
+         :> Post '[JSON] WelcomeMessageResponse
+    :<|> GraphAPIAccessToken :> Capture "page_id" Text :> "thread_settings"
+         :> ReqBody '[JSON] WelcomeMessageRequest
+         :> Delete '[JSON] WelcomeMessageResponse
+    :<|> GraphAPIAccessToken :> QueryParam "fields" Text :> Capture "user_id" Text
+         :> Get '[JSON] UserProfileResponse
 
 
 -- | Proxy for Messenger Platform Bot Send
 api :: Proxy FBMessengerSendAPI
 api = Proxy
 
-sendTextMessage_ :: Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-sendStructuredMessage_ :: Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-subscribedApps_  :: Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO SubscriptionResponse
+sendTextMessage_       ::        Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
+sendStructuredMessage_ ::  Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
+subscribedApps_        ::                                  Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO SubscriptionResponse
+welcomeMessage_        :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
+deleteWMessage_        :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
+userProfile_           ::            Maybe Token -> Maybe Text -> Text -> Manager -> BaseUrl -> ExceptT ServantError IO UserProfileResponse
 
 sendTextMessage_
   :<|> sendStructuredMessage_
-  :<|> subscribedApps_ = client api
+  :<|> subscribedApps_ 
+  :<|> welcomeMessage_
+  :<|> deleteWMessage_
+  :<|> userProfile_ = client api
 
 
 -- | Use this method to send text messages. On success, minor informations on the sent message are returned.
@@ -83,6 +98,8 @@ sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 subscribedApps :: Maybe Token -> Manager -> IO (Either ServantError SubscriptionResponse)
 subscribedApps token manager = runExceptT $ subscribedApps_ token manager graphAPIBaseUrl
 
+userProfileFields :: Maybe Text
+userProfileFields = pure $ T.pack "first_name,last_name,profile_pic,locale,timezone,gender"
 
 run :: BaseUrl -> (Maybe Token -> a -> Manager -> BaseUrl -> ExceptT ServantError IO b) -> Maybe Token -> a -> Manager -> IO (Either ServantError b)
 run b e t r m = runExceptT $ e t r m b
