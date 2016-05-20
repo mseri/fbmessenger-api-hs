@@ -16,6 +16,7 @@ module Web.FBMessenger.API.Bot.Requests
     , SendStructuredMessageRequest (..)
     -- * Functions
     , makeBubbleElement
+    , makeButtonTemplateMessageRequest
     , makeTextMessageRequest
     , makeGenericTemplateMessageRequest
     , makeImageMessageRequest
@@ -252,11 +253,7 @@ instance FromJSON StructuredMessage where
 
 
 -- TODO: implement constructors for
--- buttonTemplateMessage
 -- receiptTemplateMessage
-
--- postbackButton
--- element
 
 -- | Take reciptient id (optional) or phone_number (optional) and return a Maybe Recipient object.
 --   Return Nothing when values are either both (Just _) or both Nothing.  
@@ -281,34 +278,44 @@ makeWebUrlButton t u = Button{ btn_type = WebUrl, btn_title = t, btn_url = Just 
 makePostbackButton :: Text -> Text -> Button
 makePostbackButton t p = Button{ btn_type = Postback, btn_title = t, btn_url = Nothing, btn_payload = Just p }
 
--- | Takes a recipient, a text and a notification type (optional) and return a SendTextMessageRequest
-makeTextMessageRequest :: Recipient -> Text -> Maybe NotificationType -> SendTextMessageRequest
-makeTextMessageRequest r t nt = SendTextMessageRequest
+-- | Take a notification type (optional), a recipient, a text. Return a SendTextMessageRequest
+makeTextMessageRequest :: Maybe NotificationType -> Recipient -> Text -> SendTextMessageRequest
+makeTextMessageRequest nt r t = SendTextMessageRequest
   { message_recipient         = r
   , message_message           = text_message
   , message_notification_type = nt
   }
   where text_message = TextMessage{ text_message_text = t }
 
--- | Takes a recipient, an image url and a notification type (optional).
+-- | Take a notification type (optional), a recipient, an image url.
 --   Return a SendStructuredMessageRequest for a structured message with image attachment
-makeImageMessageRequest :: Recipient -> Text -> Maybe NotificationType -> SendStructuredMessageRequest
-makeImageMessageRequest r u nt = SendStructuredMessageRequest
+makeImageMessageRequest :: Maybe NotificationType -> Recipient -> Text -> SendStructuredMessageRequest
+makeImageMessageRequest nt r u = SendStructuredMessageRequest
   { structured_message_recipient         = r
   , structured_message_message           = structuredMessage attachment         
   , structured_message_notification_type = nt }
   where attachment = MessageAttachment{ message_attachment_type = AttachmentImage, message_attachment_payload = payload }
         payload    = ImagePayload { img_url = u } 
 
--- | Takes a recipient, a list of Elements and a notification type (optional).
+-- | Take a notification type (optional), a recipient, a list of ButtonElement.
 --   Return a SendStructuredMessageRequest for a structured message with generic template
-makeGenericTemplateMessageRequest :: Recipient -> [BubbleElement] -> Maybe NotificationType -> SendStructuredMessageRequest
-makeGenericTemplateMessageRequest r els nt = SendStructuredMessageRequest
+makeGenericTemplateMessageRequest :: Maybe NotificationType -> Recipient -> [BubbleElement]  -> SendStructuredMessageRequest
+makeGenericTemplateMessageRequest nt r els = SendStructuredMessageRequest
   { structured_message_recipient         = r
   , structured_message_message           = structuredMessage attachment         
   , structured_message_notification_type = nt }
   where attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
         payload    = GenericTemplate{ gen_template_type = GenericTType, gen_elements = els } 
+
+-- | Take a notification type (optional), a recipient, the text of the message and a list of buttons (they will appear as call-to-actions).
+--   Return a SendStructuredMessageRequest for a structured message with button template
+makeButtonTemplateMessageRequest :: Maybe NotificationType -> Recipient -> Text -> [Button]  -> SendStructuredMessageRequest
+makeButtonTemplateMessageRequest nt r t bts = SendStructuredMessageRequest
+  { structured_message_recipient         = r
+  , structured_message_message           = structuredMessage attachment         
+  , structured_message_notification_type = nt }
+  where attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
+        payload    = ButtonTemplate{ btn_template_type = ButtonTType, btn_text = t, btn_buttons = bts }
 
 
 -- Helpers, not exported
