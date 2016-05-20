@@ -24,6 +24,10 @@ module Web.FBMessenger.API.Bot.Requests
     , makeRecipient
     , makePostbackButton
     , makeWebUrlButton
+    , makeWelcomeButtonTemplateMessageRequest
+    , makeWelcomeGenericTemplateMessageRequest
+    , makeWelcomeImageMessageRequest
+    , makeWelcomeTextMessageRequest
 ) where
 
 import           Data.Aeson
@@ -36,6 +40,17 @@ import           GHC.Generics
 import           GHC.TypeLits
 import           Web.FBMessenger.API.Bot.JsonExt
 
+
+-- TODO: image as multipart. From https://developers.facebook.com/docs/messenger-platform/send-api-reference - send Image message
+--
+-- Image  (file)
+-- We support jpg and png.
+--
+-- curl  \
+--   -F recipient='{"id":"USER_ID"}' \
+--   -F message='{"attachment":{"type":"image", "payload":{}}}' \
+--   -F filedata=@/tmp/testpng.png \
+--   "https://graph.facebook.com/v2.6/me/messages?access_token=PAGE_ACCESS_TOKEN"
 
 -- | This object represents a text message request
 data SendTextMessageRequest = SendTextMessageRequest
@@ -107,10 +122,6 @@ instance FromJSON NotificationType where
   parseJSON "NO_PUSH"     = pure NoPush
   parseJSON _             = fail "Failed to parse NotificationType"
 
-
--- TODO: use message.attachment for StructuredMessages 
---       see https://developers.facebook.com/docs/messenger-platform/send-api-reference#request
--- Consider to reimplement separating by hand all the various possible requests (image, and the three templates)
 
 -- | Type of attachment for a structured message
 data AttachmentType = AttachmentImage 
@@ -232,14 +243,6 @@ instance ToJSON BubbleElement where
 instance FromJSON BubbleElement where
     parseJSON = parseJsonDrop 4
 
-    
--- TODO: replace these stubs with actual types
-
-type ReceiptElements = Text
-type ShippingAddress = Text
-type PaymentSummary = Text
-type PaymentAdjustments = Text
-
 
 -- | Content of the message for a structured message
 data StructuredMessage = StructuredMessage 
@@ -253,22 +256,47 @@ instance FromJSON StructuredMessage where
     parseJSON = parseJsonDrop 19
 
 
--- TODO: implement this
-data WelcomeMessageRequest = WelcomeMessageRequest {} deriving (Show, Generic)
-instance ToJSON WelcomeMessageRequest
-instance FromJSON WelcomeMessageRequest
+-- | This object represents a Welcome Message request (FromJSON is disabled for it)
+data WelcomeMessageRequest = WelcomeMessageRequest 
+  { wm_setting_type    :: Text
+  , wm_thread_state    :: Text
+  , wm_call_to_actions :: [WelcomeMessage]
+  } deriving (Show, Generic)
+
+instance ToJSON WelcomeMessageRequest where
+  toJSON = toJsonDrop 3
+  
+-- instance FromJSON WelcomeMessageRequest where
+--   parseJSON = parseJsonDrop 3 
+ 
+-- | This object represents a Welcome Message (FromJSON is disabled for it)
+data WelcomeMessage = 
+    WelcomeTextMessageMessage { wtm_message :: TextMessage } 
+  | WelcomeStructuredMessage { wsm_message :: StructuredMessage } 
+  deriving (Show, Generic)
+  
+instance ToJSON WelcomeMessage where
+  toJSON = toJsonDrop 4
+
+--instance FromJSON WelcomeMessage where
+--  parseJSON = parseJsonDrop 4 
+
+-- TODO: replace these stubs with actual types
+type ReceiptElements = Text
+type ShippingAddress = Text
+type PaymentSummary = Text
+type PaymentAdjustments = Text
+
 
 -- TODO: implement constructors for
 -- receiptTemplateMessage
--- welcomeMessageRequest
--- deleteWelcomeMessageRequest
 
 -- | Take reciptient id (optional) or phone_number (optional) and return a Maybe Recipient object.
 --   Return Nothing when values are either both (Just _) or both Nothing.  
 makeRecipient :: Maybe Text -> Maybe Text -> Maybe Recipient
 makeRecipient Nothing Nothing   = Nothing
 makeRecipient (Just _) (Just _) = Nothing
-makeRecipient rid phone_number   = pure Recipient { recipient_id = rid, recipient_phone_number = phone_number } 
+makeRecipient rid phone_number   = pure Recipient{ recipient_id = rid, recipient_phone_number = phone_number } 
 
 -- | Take the bubble element title, the url that is opened when bubble is tapped (optional), the url to bubble image (optional),
 --   the bubble subtitle (optional) and a list of Button (optional). The buttons will appear as call-to-action in Messenger.
@@ -323,6 +351,49 @@ makeButtonTemplateMessageRequest nt r t bts = SendStructuredMessageRequest
   , structured_message_message           = structuredMessage attachment         
   , structured_message_notification_type = nt }
   where attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
+        payload    = ButtonTemplate{ btn_template_type = ButtonTType, btn_text = t, btn_buttons = bts }
+
+
+-- | Take a text. Return a WelcomeMessageRequest
+makeWelcomeTextMessageRequest :: Text -> WelcomeMessageRequest
+makeWelcomeTextMessageRequest t = WelcomeMessageRequest 
+  { wm_setting_type    = T.pack "call_to_actions"
+  , wm_thread_state    = T.pack "new_thread"
+  , wm_call_to_actions = [wm] }
+  where wm = WelcomeTextMessageMessage{ wtm_message = m } 
+        m  = TextMessage{ text_message_text = t }
+
+-- | Take an image url.
+--   Return a WelcomeMessageRequest for a structured message with image attachment
+makeWelcomeImageMessageRequest :: Text -> WelcomeMessageRequest
+makeWelcomeImageMessageRequest u = WelcomeMessageRequest 
+  { wm_setting_type    = T.pack "call_to_actions"
+  , wm_thread_state    = T.pack "new_thread"
+  , wm_call_to_actions = [wm] }
+  where wm         = WelcomeStructuredMessage{ wsm_message = structuredMessage attachment }
+        attachment = MessageAttachment{ message_attachment_type = AttachmentImage, message_attachment_payload = payload }
+        payload    = ImagePayload { img_url = u } 
+
+-- | Take a list of ButtonElement.
+--   Return a WelcomeMessageRequest for a structured message with generic template
+makeWelcomeGenericTemplateMessageRequest :: [BubbleElement]  -> WelcomeMessageRequest
+makeWelcomeGenericTemplateMessageRequest els = WelcomeMessageRequest 
+  { wm_setting_type    = T.pack "call_to_actions"
+  , wm_thread_state    = T.pack "new_thread"
+  , wm_call_to_actions = [wm] }
+  where wm         = WelcomeStructuredMessage{ wsm_message = structuredMessage attachment }
+        attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
+        payload    = GenericTemplate{ gen_template_type = GenericTType, gen_elements = els } 
+
+-- | Take the text of the message and a list of buttons (they will appear as call-to-actions).
+--   Return a WelcomeMessageRequest for a structured message with button template
+makeWelcomeButtonTemplateMessageRequest :: Text -> [Button]  -> WelcomeMessageRequest
+makeWelcomeButtonTemplateMessageRequest t bts = WelcomeMessageRequest 
+  { wm_setting_type    = T.pack "call_to_actions"
+  , wm_thread_state    = T.pack "new_thread"
+  , wm_call_to_actions = [wm] }
+  where wm         = WelcomeStructuredMessage{ wsm_message = structuredMessage attachment }
+        attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
         payload    = ButtonTemplate{ btn_template_type = ButtonTType, btn_text = t, btn_buttons = bts }
 
 

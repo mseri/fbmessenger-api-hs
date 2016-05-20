@@ -8,6 +8,7 @@ module Web.FBMessenger.API.Bot.SendAPI
   ( -- * Functions
     sendTextMessage
   , sendStructuredMessage
+  , setWelcomeMessage
   , subscribedApps
     -- * API
   , FBMessengerSendAPI
@@ -98,8 +99,20 @@ sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 subscribedApps :: Maybe Token -> Manager -> IO (Either ServantError SubscriptionResponse)
 subscribedApps token manager = runExceptT $ subscribedApps_ token manager graphAPIBaseUrl
 
+-- TODO
+setWelcomeMessage :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> IO (Either ServantError WelcomeMessageResponse)
+setWelcomeMessage token pageId message manager = runExceptT $ welcomeMessage_ token pageId message manager graphAPIBaseUrl
+
+-- Helpers (not exported)
+
 userProfileFields :: Maybe Text
 userProfileFields = pure $ T.pack "first_name,last_name,profile_pic,locale,timezone,gender"
+
+welcomeDeleteMessage :: WelcomeMessageRequest
+welcomeDeleteMessage = WelcomeMessageRequest 
+  { wm_setting_type    = T.pack "call_to_actions"
+  , wm_thread_state    = T.pack "new_thread"
+  , wm_call_to_actions = [] }
 
 run :: BaseUrl -> (Maybe Token -> a -> Manager -> BaseUrl -> ExceptT ServantError IO b) -> Maybe Token -> a -> Manager -> IO (Either ServantError b)
 run b e t r m = runExceptT $ e t r m b
