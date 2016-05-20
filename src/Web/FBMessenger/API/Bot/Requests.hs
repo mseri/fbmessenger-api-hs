@@ -8,16 +8,20 @@
 module Web.FBMessenger.API.Bot.Requests 
     ( -- * Types
       Button (..)
-    , Element (..)
+    , BubbleElement (..)
     , Recipient (..)
     , TextMessage (..)
     , NotificationType (..)
     , SendTextMessageRequest (..)
     , SendStructuredMessageRequest (..)
     -- * Functions
-    , makeRecipient
-    , makeImageMessageRequest
+    , makeBubbleElement
+    , makeTextMessageRequest
     , makeGenericTemplateMessageRequest
+    , makeImageMessageRequest
+    , makeRecipient
+    , makePostbackButton
+    , makeWebUrlButton
 ) where
 
 import           Data.Aeson
@@ -139,7 +143,7 @@ data AttachmentPayload =
     ImagePayload { img_url :: Text } 
   | GenericTemplate 
     { gen_template_type  :: TemplateType          -- Value must be "generic"
-    , gen_elements       :: [Element]             -- Data for each bubble in message 
+    , gen_elements       :: [BubbleElement]             -- Data for each bubble in message 
     }
   | ButtonTemplate  
     { btn_template_type  :: TemplateType          -- Value must be "button"
@@ -211,8 +215,8 @@ instance FromJSON ButtonType where
   parseJSON _          = fail "Failed to parse ButtonType"
 
 
--- | Elements object for structured messages payloads
-data Element = Element
+-- | Bubble element object for structured messages payloads
+data BubbleElement = BubbleElement
   { elm_title      :: Text           -- Bubble title
   , elm_item_url   :: Maybe Text     -- URL that is opened when bubble is tapped
   , elm_image_url  :: Maybe Text     -- Bubble image
@@ -220,10 +224,10 @@ data Element = Element
   , elm_buttons    :: Maybe [Button] -- Set of buttons that appear as call-to-actions
   } deriving (Show, Generic)
 
-instance ToJSON Element where
+instance ToJSON BubbleElement where
     toJSON = toJsonDrop 4
 
-instance FromJSON Element where
+instance FromJSON BubbleElement where
     parseJSON = parseJsonDrop 4
 
     
@@ -248,19 +252,34 @@ instance FromJSON StructuredMessage where
 
 
 -- TODO: implement constructors for
--- genericTemplateMessage
 -- buttonTemplateMessage
 -- receiptTemplateMessage
--- webUrlButton
+
 -- postbackButton
 -- element
 
--- | Takes `id` and `phone_number` and return a Maybe Recipient object.
+-- | Take reciptient id (optional) or phone_number (optional) and return a Maybe Recipient object.
 --   Return Nothing when values are either both (Just _) or both Nothing.  
 makeRecipient :: Maybe Text -> Maybe Text -> Maybe Recipient
 makeRecipient Nothing Nothing   = Nothing
 makeRecipient (Just _) (Just _) = Nothing
 makeRecipient rid phone_number   = pure Recipient { recipient_id = rid, recipient_phone_number = phone_number } 
+
+-- | Take the bubble element title, the url that is opened when bubble is tapped (optional), the url to bubble image (optional),
+--   the bubble subtitle (optional) and a list of Button (optional). The buttons will appear as call-to-action in Messenger.
+--   Return a bubble Element
+makeBubbleElement :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe [Button] -> BubbleElement
+makeBubbleElement t itu imu s bs = BubbleElement{ elm_title = t, elm_item_url = itu, elm_image_url = imu, elm_subtitle = s, elm_buttons = bs }
+
+-- | Take the button title and the button url (this URL is opened in a mobile browser when the button is tapped)
+--   and return a "web_url" button
+makeWebUrlButton :: Text -> Text -> Button
+makeWebUrlButton t u = Button{ btn_type = WebUrl, btn_title = t, btn_url = Just u, btn_payload = Nothing }
+
+-- | Take the button title and the button payload (this data will be sent back to you via webhook)
+--   and return a "postback" button  
+makePostbackButton :: Text -> Text -> Button
+makePostbackButton t p = Button{ btn_type = Postback, btn_title = t, btn_url = Nothing, btn_payload = Just p }
 
 -- | Takes a recipient, a text and a notification type (optional) and return a SendTextMessageRequest
 makeTextMessageRequest :: Recipient -> Text -> Maybe NotificationType -> SendTextMessageRequest
@@ -283,7 +302,7 @@ makeImageMessageRequest r u nt = SendStructuredMessageRequest
 
 -- | Takes a recipient, a list of Elements and a notification type (optional).
 --   Return a SendStructuredMessageRequest for a structured message with generic template
-makeGenericTemplateMessageRequest :: Recipient -> [Element] -> Maybe NotificationType -> SendStructuredMessageRequest
+makeGenericTemplateMessageRequest :: Recipient -> [BubbleElement] -> Maybe NotificationType -> SendStructuredMessageRequest
 makeGenericTemplateMessageRequest r els nt = SendStructuredMessageRequest
   { structured_message_recipient         = r
   , structured_message_message           = structuredMessage attachment         
@@ -293,5 +312,6 @@ makeGenericTemplateMessageRequest r els nt = SendStructuredMessageRequest
 
 
 -- Helpers, not exported
+
 structuredMessage :: MessageAttachment -> StructuredMessage
 structuredMessage attachment = StructuredMessage{ structured_message_attachment = attachment }
