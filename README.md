@@ -7,6 +7,21 @@ Useful links:
 - [servant tutorial](http://haskell-servant.readthedocs.io/en/stable/tutorial)
 - [simple python bindings for the messenger api](https://github.com/geeknam/messengerbot)
 
+# Note per framp
+
+Ancora non mi è chiaro al 100% come strutturare la libreria. 
+Per ora ho convertito quello che stavo facendo in una implementazione delle Send API.
+Piano piano la implemento tutta.
+
+Per il resto pensavo:
+
+Rimettiamo Data e ci mettiamo i tipi delle chiamate che Facebook fa al websocket, 
+così il bot si riduce a importare la libreria e implementare l'api che risponde alle chiamate di fb 
+usando i tipi che abbiamo già preimpostato nella libreria (a quel punto uno può usare quello che vuole,
+tanto servant-server quanto qualunque altro framework).
+
+Che dici? 
+
 # Usage
 
 Before being able to test and use the bot, you will need to verify your key.
@@ -38,6 +53,7 @@ Run `stack ghci` then copy and paste the following
 You should get the response: 
 
     Left (FailureResponse {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseContentType = application/json, responseBody = "{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"ESxHmUos2B+\"}}"})
+
 
 # Contribution
 

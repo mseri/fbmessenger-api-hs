@@ -17,8 +17,7 @@ library
   hs-source-dirs:      src
   ghc-options:         -Wall -fwarn-tabs
   exposed-modules:     Web.FBMessenger.API.Bot
-                     , Web.FBMessenger.API.Bot.API
-                     , Web.FBMessenger.API.Bot.Data
+                     , Web.FBMessenger.API.Bot.SendAPI
                      , Web.FBMessenger.API.Bot.Responses
                      , Web.FBMessenger.API.Bot.Requests
   other-modules:       Web.FBMessenger.API.Bot.JsonExt

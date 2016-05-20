@@ -7,11 +7,16 @@
 -- | This module contains data objects which represents requests to Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Requests 
     ( -- * Types
-      Recipient (..)
+      Button (..)
+    , Element (..)
+    , Recipient (..)
     , TextMessage (..)
     , NotificationType (..)
     , SendTextMessageRequest (..)
     , SendStructuredMessageRequest (..)
+    , StructuredMessage (..)
+    -- * Functions
+    , makeRecipient
 ) where
 
 import           Data.Aeson
@@ -22,8 +27,35 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           GHC.Generics
 import           GHC.TypeLits
-import           Web.FBMessenger.API.Bot.Data
 import           Web.FBMessenger.API.Bot.JsonExt
+
+
+-- | This object represents a text message request
+data SendTextMessageRequest = SendTextMessageRequest
+  { message_recipient         :: Recipient
+  , message_message           :: TextMessage
+  , message_notification_type :: Maybe NotificationType
+  } deriving (Show, Generic)
+
+instance ToJSON SendTextMessageRequest where
+  toJSON = toJsonDrop 8
+
+instance FromJSON SendTextMessageRequest where
+  parseJSON = parseJsonDrop 8
+
+
+-- | This object represents a structured message request
+data SendStructuredMessageRequest = SendStructuredMessageRequest
+  { structured_message_recipient         :: Recipient
+  , structured_message_message           :: StructuredMessage         
+  , structured_message_notification_type :: Maybe NotificationType
+  } deriving (Show, Generic)
+
+instance ToJSON SendStructuredMessageRequest where
+  toJSON = toJsonDrop 19
+
+instance FromJSON SendStructuredMessageRequest where
+  parseJSON = parseJsonDrop 19
 
 
 -- | Informations about the recipient of the message
@@ -31,7 +63,6 @@ data Recipient = Recipient
   { recipient_phone_number :: Maybe Text  -- Phone number of the recipient with the format +1(212)555-2368
   , recipient_id           :: Maybe Text  -- ID of recipient
   } deriving (Show, Generic)
-  -- WARN: they cannot both be Nothing! Maybe we should rethink the structure...
 
 instance ToJSON Recipient where
     toJSON = toJsonDrop 10
@@ -70,20 +101,6 @@ instance FromJSON NotificationType where
   parseJSON _             = fail "Failed to parse NotificationType"
 
 
--- | This object represents a text message request
-data SendTextMessageRequest = SendTextMessageRequest
-  { message_recipient         :: Recipient
-  , message_message           :: TextMessage
-  , message_notification_type :: Maybe NotificationType
-  } deriving (Show, Generic)
-
-instance ToJSON SendTextMessageRequest where
-  toJSON = toJsonDrop 8
-
-instance FromJSON SendTextMessageRequest where
-  parseJSON = parseJsonDrop 8
-
-
 -- TODO: use message.attachment for StructuredMessages 
 --       see https://developers.facebook.com/docs/messenger-platform/send-api-reference#request
 -- Consider to reimplement separating by hand all the various possible requests (image, and the three templates)
@@ -106,49 +123,116 @@ instance FromJSON AttachmentType where
 -- | Attachment for a structured message
 data MessageAttachment = MessageAttachment
   { message_attachment_type    :: AttachmentType
-  , message_attachment_payload :: ImagePayload -- AttachmentPayload
+  , message_attachment_payload :: AttachmentPayload
   } deriving (Show, Generic)
-  -- WARN: the payload depends on the type!! Maybe we should rethink the structure...
 
 instance ToJSON MessageAttachment where
     toJSON = toJsonDrop 19
 
 instance FromJSON MessageAttachment where
     parseJSON = parseJsonDrop 19
-
--- | Payload of attachment for a structured message
-data ImagePayload = ImagePayload { image_url :: Text } deriving (Show, Generic)
-
-instance ToJSON ImagePayload where
-    toJSON = toJsonDrop 6
-
-instance FromJSON ImagePayload where
-    parseJSON = parseJsonDrop 6
     
--- TODO: add the following payloads
--- data AttachmentPayload = ImagePayload 
--- | GenericTemplate 
---   { generict_template_type  :: TemplateType      -- Value must be "generic"
---   , genetict_elements       :: [Element]         -- Data for each bubble in message 
---   }
--- | ButtonTemplate  
---   { buttontp_template_type  :: TemplateType      -- Value must be "button"
---   , buttontp_text           :: Text              -- Text that appears in main body
---   , buttontp_buttons        :: [Button]          -- Set of buttons that appear as call-to-actions
---   }
--- | ReceiptTemplate 
---   { receiptt_template_type  :: TemplateType      -- Value should be "receipt"
---   , receiptt_recipient_name :: Text              -- Recipient's Name
---   , receiptt_order_number   :: Text              -- Order number. Must be unique
---   , receiptt_currency       :: Text              -- Currency for order
---   , receiptt_payment_method :: Text              -- Payment method details. This can be a custom string. Ex: 'Visa 1234'
---   , receiptt_timestamp      :: Maybe Text        -- Timestamp of order
---   , receiptt_order_url      :: Maybe Text        -- URL of order
---   , receiptt_elements       :: [ReceiptElements] -- Items in order       
---   , receiptt_address        :: Maybe ShippingAddress -- Shipping address
---   , receiptt_summary        :: PaymentSummary    -- Payment summary
---   , receiptt_adjustment     :: PaymentAdjustments -- Payment adjustments
---   }     
+
+-- | Payload of attachment for structured messages
+data AttachmentPayload = 
+    ImagePayload { img_url :: Text } 
+  | GenericTemplate 
+    { gen_template_type  :: TemplateType          -- Value must be "generic"
+    , gen_elements       :: [Element]             -- Data for each bubble in message 
+    }
+  | ButtonTemplate  
+    { btn_template_type  :: TemplateType          -- Value must be "button"
+    , btn_text           :: Text                  -- Text that appears in main body
+    , btn_buttons        :: [Button]              -- Set of buttons that appear as call-to-actions
+    }
+  | ReceiptTemplate 
+    { rcp_template_type  :: TemplateType          -- Value should be "receipt"
+    , rcp_recipient_name :: Text                  -- Recipient's Name
+    , rcp_order_number   :: Text                  -- Order number. Must be unique
+    , rcp_currency       :: Text                  -- Currency for order
+    , rcp_payment_method :: Text                  -- Payment method details. This can be a custom string. Ex: 'Visa 1234'
+    , rcp_timestamp      :: Maybe Text            -- Timestamp of order
+    , rcp_order_url      :: Maybe Text            -- URL of order
+    , rcp_elements       :: [ReceiptElements]     -- Items in order       
+    , rcp_address        :: Maybe ShippingAddress -- Shipping address
+    , rcp_summary        :: PaymentSummary        -- Payment summary
+    , rcp_adjustment     :: PaymentAdjustments    -- Payment adjustments
+    }     
+  deriving (Show, Generic)
+
+instance ToJSON AttachmentPayload where
+    toJSON = toJsonDrop 4
+
+instance FromJSON AttachmentPayload where
+    parseJSON = parseJsonDrop 4
+
+
+-- | Template type for structured messages
+data TemplateType = GenericTType | ButtonTType | ReceiptTType deriving (Show)
+
+instance ToJSON TemplateType where
+  toJSON GenericTType = "generic"
+  toJSON ButtonTType  = "button"
+  toJSON ReceiptTType = "receipt"
+
+instance FromJSON TemplateType where
+  parseJSON "generic" = pure GenericTType
+  parseJSON "button"  = pure ButtonTType
+  parseJSON "receipt" = pure ReceiptTType
+  parseJSON _         = fail "Failed to parse TemplateType"
+
+
+-- | Button object for structured messages payloads
+data Button = Button 
+  { btn_type    :: ButtonType   -- Value is "web_url" or "postback"
+  , btn_title   :: Text         -- Button title
+  , btn_url     :: Maybe Text   -- For web_url buttons, this URL is opened in a mobile browser when the button is tapped. Required if type is "web_url"
+  , btn_payload :: Maybe Text   -- For postback buttons, this data will be sent back to you via webhook. Required if type is "postback"
+  } deriving (Show, Generic)
+
+instance ToJSON Button where
+    toJSON = toJsonDrop 4
+    
+instance FromJSON Button where
+  parseJSON = parseJsonDrop 4
+
+
+-- | Type for Button objects
+data ButtonType = WebUrl | Postback deriving (Show)
+
+instance ToJSON ButtonType where
+  toJSON WebUrl    = "web_url"
+  toJSON Postback  = "postback"
+
+instance FromJSON ButtonType where
+  parseJSON "web_url"  = pure WebUrl
+  parseJSON "postback" = pure Postback
+  parseJSON _          = fail "Failed to parse ButtonType"
+
+
+-- | Elements object for structured messages payloads
+data Element = Element
+  { elm_title      :: Text           -- Bubble title
+  , elm_item_url   :: Maybe Text     -- URL that is opened when bubble is tapped
+  , elm_image_url  :: Maybe Text     -- Bubble image
+  , elm_subtitle   :: Maybe Text     -- Bubble subtitle
+  , elm_buttons    :: Maybe [Button] -- Set of buttons that appear as call-to-actions
+  } deriving (Show, Generic)
+
+instance ToJSON Element where
+    toJSON = toJsonDrop 4
+
+instance FromJSON Element where
+    parseJSON = parseJsonDrop 4
+
+    
+-- TODO: replace these stubs with actual types
+
+type ReceiptElements = Text
+type ShippingAddress = Text
+type PaymentSummary = Text
+type PaymentAdjustments = Text
+
 
 -- | Content of the message for a structured message
 data StructuredMessage = StructuredMessage 
@@ -162,15 +246,20 @@ instance FromJSON StructuredMessage where
     parseJSON = parseJsonDrop 19
 
 
--- | This object represents a structured message request
-data SendStructuredMessageRequest = SendStructuredMessageRequest
-  { structured_message_recipient         :: Recipient
-  , structured_message_message           :: StructuredMessage         
-  , structured_message_notification_type :: Maybe NotificationType
-  } deriving (Show, Generic)
+-- TODO: implement constructors for
+-- recipient -- WARN: recipient cannot contain both Nothing fields
+-- textMessage
+-- imageMessage
+-- genericTemplateMessage
+-- buttonTemplateMessage
+-- receiptTemplateMessage
+-- webUrlButton
+-- postbackButton
+-- element
 
-instance ToJSON SendStructuredMessageRequest where
-  toJSON = toJsonDrop 19
-
-instance FromJSON SendStructuredMessageRequest where
-  parseJSON = parseJsonDrop 19
+-- | Takes `id` and `phone_number` and return a Maybe Recipient object.
+--   Return Nothing when values are either both (Just _) or both Nothing.  
+makeRecipient :: Maybe Text -> Maybe Text -> Maybe Recipient
+makeRecipient Nothing Nothing   = Nothing
+makeRecipient (Just _) (Just _) = Nothing
+makeRecipient rid phone_number   = pure Recipient { recipient_id = rid, recipient_phone_number = phone_number } 

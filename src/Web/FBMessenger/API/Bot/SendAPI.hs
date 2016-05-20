@@ -4,16 +4,16 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeOperators              #-}
 
-module Web.FBMessenger.API.Bot.API 
+module Web.FBMessenger.API.Bot.SendAPI 
   ( -- * Functions
     sendTextMessage
   , sendStructuredMessage
   , subscribedApps
     -- * API
-  , FBMessengerBotAPI
+  , FBMessengerSendAPI
   , api
     -- * Types
-  , Token             (..)
+  , Token                  (..)
   ) where
 
 -- ExceptT is practically the same as EitherT
@@ -45,8 +45,8 @@ graphAPIBaseUrl :: BaseUrl
 graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "/v2.6/me"
 
 
--- | Messenger Platform Bot API
-type FBMessengerBotAPI = 
+-- | Messenger Platform Send API
+type FBMessengerSendAPI = 
          GraphAPIAccessToken :> "messages" 
          :> ReqBody '[JSON] SendTextMessageRequest
          :> Post '[JSON] MessageResponse
@@ -57,8 +57,8 @@ type FBMessengerBotAPI =
          :> Post '[JSON] SubscriptionResponse
 
 
--- | Proxy for Messenger Platform Bot API
-api :: Proxy FBMessengerBotAPI
+-- | Proxy for Messenger Platform Bot Send
+api :: Proxy FBMessengerSendAPI
 api = Proxy
 
 sendTextMessage_ :: Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
@@ -74,7 +74,7 @@ sendTextMessage_
 sendTextMessage :: Maybe Token -> SendTextMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendTextMessage = run graphAPIBaseUrl sendTextMessage_
 
--- | Use this method to send structured messages. On success, minor informations on the sent message are returned.
+-- | Use this method to send structured messages containing an image. On success, minor informations on the sent message are returned.
 sendStructuredMessage :: Maybe Token -> SendStructuredMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 

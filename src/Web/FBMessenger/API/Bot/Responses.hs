@@ -19,7 +19,6 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           GHC.Generics
 import           GHC.TypeLits
-import           Web.FBMessenger.API.Bot.Data
 import           Web.FBMessenger.API.Bot.JsonExt
 
 -- | This object represents the 'subscribed_apps' response
