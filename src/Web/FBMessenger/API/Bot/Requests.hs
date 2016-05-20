@@ -14,9 +14,10 @@ module Web.FBMessenger.API.Bot.Requests
     , NotificationType (..)
     , SendTextMessageRequest (..)
     , SendStructuredMessageRequest (..)
-    , StructuredMessage (..)
     -- * Functions
     , makeRecipient
+    , makeImageMessageRequest
+    , makeGenericTemplateMessageRequest
 ) where
 
 import           Data.Aeson
@@ -247,9 +248,6 @@ instance FromJSON StructuredMessage where
 
 
 -- TODO: implement constructors for
--- recipient -- WARN: recipient cannot contain both Nothing fields
--- textMessage
--- imageMessage
 -- genericTemplateMessage
 -- buttonTemplateMessage
 -- receiptTemplateMessage
@@ -263,3 +261,37 @@ makeRecipient :: Maybe Text -> Maybe Text -> Maybe Recipient
 makeRecipient Nothing Nothing   = Nothing
 makeRecipient (Just _) (Just _) = Nothing
 makeRecipient rid phone_number   = pure Recipient { recipient_id = rid, recipient_phone_number = phone_number } 
+
+-- | Takes a recipient, a text and a notification type (optional) and return a SendTextMessageRequest
+makeTextMessageRequest :: Recipient -> Text -> Maybe NotificationType -> SendTextMessageRequest
+makeTextMessageRequest r t nt = SendTextMessageRequest
+  { message_recipient         = r
+  , message_message           = text_message
+  , message_notification_type = nt
+  }
+  where text_message = TextMessage{ text_message_text = t }
+
+-- | Takes a recipient, an image url and a notification type (optional).
+--   Return a SendStructuredMessageRequest for a structured message with image attachment
+makeImageMessageRequest :: Recipient -> Text -> Maybe NotificationType -> SendStructuredMessageRequest
+makeImageMessageRequest r u nt = SendStructuredMessageRequest
+  { structured_message_recipient         = r
+  , structured_message_message           = structuredMessage attachment         
+  , structured_message_notification_type = nt }
+  where attachment = MessageAttachment{ message_attachment_type = AttachmentImage, message_attachment_payload = payload }
+        payload    = ImagePayload { img_url = u } 
+
+-- | Takes a recipient, a list of Elements and a notification type (optional).
+--   Return a SendStructuredMessageRequest for a structured message with generic template
+makeGenericTemplateMessageRequest :: Recipient -> [Element] -> Maybe NotificationType -> SendStructuredMessageRequest
+makeGenericTemplateMessageRequest r els nt = SendStructuredMessageRequest
+  { structured_message_recipient         = r
+  , structured_message_message           = structuredMessage attachment         
+  , structured_message_notification_type = nt }
+  where attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
+        payload    = GenericTemplate{ gen_template_type = GenericTType, gen_elements = els } 
+
+
+-- Helpers, not exported
+structuredMessage :: MessageAttachment -> StructuredMessage
+structuredMessage attachment = StructuredMessage{ structured_message_attachment = attachment }
