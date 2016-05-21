@@ -11,25 +11,23 @@ module Web.FBMessenger.API.Bot.SendAPI
   , sendStructuredMessage
   , setWelcomeMessage
   , subscribedApps
+  , uploadImageMessage
     -- * API
-  , FBMessengerSendAPI
   , api
+  , FBMessengerSendAPI
     -- * Types
   , Token                  (..)
   ) where
 
 
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
-import           Data.Aeson
-import           Data.Aeson.Types
 import           Data.Proxy
 import           Data.Text (Text)
 import qualified Data.Text as T
-import           GHC.Generics
-import           GHC.TypeLits
 import           Network.HTTP.Client (Manager)
 import           Servant.API
 import           Servant.Client
+import           Servant.Client.MultipartFormData
 import           Web.FBMessenger.API.Bot.Requests
 import           Web.FBMessenger.API.Bot.Responses
 
@@ -53,6 +51,9 @@ type FBMessengerSendAPI =
          GraphAPIAccessToken :> "messages" 
          :> ReqBody '[JSON] SendTextMessageRequest
          :> Post '[JSON] MessageResponse
+    :<|> GraphAPIAccessToken :> "messages"
+         :> MultipartFormDataReqBody (UploadImageMessageRequest FileUpload)
+         :> Post '[JSON] MessageResponse
     :<|> GraphAPIAccessToken :> "messages" 
          :> ReqBody '[JSON] SendStructuredMessageRequest
          :> Post '[JSON] MessageResponse
@@ -72,14 +73,16 @@ type FBMessengerSendAPI =
 api :: Proxy FBMessengerSendAPI
 api = Proxy
 
-sendTextMessage_       ::        Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-sendStructuredMessage_ ::  Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-subscribedApps_        ::                                  Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO SubscriptionResponse
-welcomeMessage_        :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
-deleteWMessage_        :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
-userProfile_           ::            Maybe Token -> Maybe Text -> Text -> Manager -> BaseUrl -> ExceptT ServantError IO UserProfileResponse
+sendTextMessage_       ::               Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
+uploadImageMessage_    :: Maybe Token -> UploadImageMessageRequest FileUpload -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
+sendStructuredMessage_ ::         Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
+subscribedApps_        ::                                         Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO SubscriptionResponse
+welcomeMessage_        ::        Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
+deleteWMessage_        ::        Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
+userProfile_           ::                   Maybe Token -> Maybe Text -> Text -> Manager -> BaseUrl -> ExceptT ServantError IO UserProfileResponse
 
 sendTextMessage_
+  :<|> uploadImageMessage_
   :<|> sendStructuredMessage_
   :<|> subscribedApps_ 
   :<|> welcomeMessage_
@@ -91,27 +94,33 @@ sendTextMessage_
 sendTextMessage :: Maybe Token -> SendTextMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendTextMessage = run graphAPIBaseUrl sendTextMessage_
 
--- | Send structured messages containing an image. On success, minor informations on the sent message are returned.
+-- | Upload an image and send a structured messages containing it. On success, minor informations on the sent message are returned.
+uploadImageMessage :: Maybe Token -> UploadImageMessageRequest FileUpload -> Manager -> IO (Either ServantError MessageResponse)
+uploadImageMessage = run graphAPIBaseUrl uploadImageMessage_
+
+-- | Send a structured messages. This can be an image message (containing an image url) or any template message (generic, button, receipt).  
+--   On success, minor informations on the sent message are returned.
 sendStructuredMessage :: Maybe Token -> SendStructuredMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 
 -- | Test if your bot's auth token is enabled. Requires no parameters.
---   Returns a simple object containing a boolean value indicating if the token is correctly registered.
+--   Return a simple object containing a boolean value indicating if the token is correctly registered.
 subscribedApps :: Maybe Token -> Manager -> IO (Either ServantError SubscriptionResponse)
 subscribedApps token manager = runExceptT $ subscribedApps_ token manager graphAPIBaseUrl
 
--- | Set a welcome message. In addition to the token and the message request, you need to provide the facebook page_id.
---   Returns a simple object containing a string indicating if the welcome message is correctly registered.
+-- | Set a welcome message, this can be an image message (containing an image url) or any template message (generic, button, receipt).
+--   In addition to the token and the message request, you need to provide the facebook page_id.
+--   Return a simple object containing a string indicating if the welcome message is correctly registered.
 setWelcomeMessage :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> IO (Either ServantError WelcomeMessageResponse)
 setWelcomeMessage token pageId message manager = runExceptT $ welcomeMessage_ token pageId message manager graphAPIBaseUrl
 
 -- | Remove the welcome message. In addition to the token, you need to provide the facebook page_id.
---   Returns a simple object containing a string indicating if the welcome message is correctly removed.
+--   Return a simple object containing a string indicating if the welcome message is correctly removed.
 removeWelcomeMessage :: Maybe Token -> Text -> Manager -> IO (Either ServantError WelcomeMessageResponse)
 removeWelcomeMessage token pageId manager = runExceptT $ deleteWMessage_ token pageId welcomeDeleteMessage manager graphAPIBaseUrl
 
 -- | Get the profile informations of a user. In addition to the token, you need to provide the user_id.
---   Returns a record containing the profile informations.
+--   Return a record containing the profile informations.
 getUserProfileInfo :: Maybe Token -> Text -> Manager -> IO (Either ServantError UserProfileResponse)
 getUserProfileInfo token userId manager = runExceptT $ userProfile_ token userProfileFields userId manager graphAPIBaseUrl
 

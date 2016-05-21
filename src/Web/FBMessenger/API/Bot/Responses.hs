@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
--- {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeOperators              #-}
 
@@ -14,28 +13,19 @@ module Web.FBMessenger.API.Bot.Responses
   ) where
 
 import           Data.Aeson
-import           Data.Aeson.Types
-import           Data.Maybe
-import           Data.Proxy
 import           Data.Text (Text)
-import qualified Data.Text as T
 import           GHC.Generics
-import           GHC.TypeLits
 import           Web.FBMessenger.API.Bot.JsonExt
 
 
--- | This object represents the 'subscribed_apps' response
-data SubscriptionResponse = SubscriptionResponse
-  {
-    subscription_success :: Bool
-  } deriving (Show, Generic)
+-- | This object represents the 'subscribed_apps' success response
+data SubscriptionResponse = SubscriptionResponse{ subscription_success :: Bool } deriving (Show, Generic)
 
 instance ToJSON SubscriptionResponse where
   toJSON = toJsonDrop 13
 
 instance FromJSON SubscriptionResponse where
   parseJSON = parseJsonDrop 13
-
 
 -- | This object contais the response after a message has been succesfully sent 
 data MessageResponse = MessageResponse 

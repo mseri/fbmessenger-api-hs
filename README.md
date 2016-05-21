@@ -64,7 +64,7 @@ _(this will need review)_
 
 # TODO
 
-- Image Message (multipart with upload)
 - Tests
+- Linter for the errors
 - Webhooks API Requests Body types (NOTE: the body for these will be an array of an appropriate sum type... annoying)
 - Set up Travis, CircleCI or whatever is supported by bitbucket for testing

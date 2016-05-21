@@ -21,19 +21,23 @@ library
                      , Web.FBMessenger.API.Bot.Responses
                      , Web.FBMessenger.API.Bot.Requests
   other-modules:       Web.FBMessenger.API.Bot.JsonExt
+                     , Servant.Client.MultipartFormData
   build-depends:       base >= 4.7 && < 5
                      -- below this line in alphabetical order
                      , aeson
                      , bytestring
                      , http-client
-                     , http-client-tls
                      , servant == 0.7.*
                      , servant-client == 0.7.*
-                     , servant-server == 0.7.*
                      , text
                      , transformers
-                     , wai
-                     , warp
+                     -- for Servant.Client.MultipartFormData and interaction with it
+                     , http-media         
+                     , http-types
+                     , mime-types
+                     , string-conversions
+                     -- for tlsDefaultManager while testing on ghci
+                     , http-client-tls
   default-language:    Haskell2010
 
 executable example
