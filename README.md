@@ -40,7 +40,7 @@ Run `stack ghci` then copy and paste the following
     let manager = newManager tlsManagerSettings
     manager >>= \m -> subscribedApps $ Just token m
 
-You should get the response: 
+You should get a positive response or (in case of inactive token): 
 
     Left (FailureResponse {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseContentType = application/json, responseBody = "{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"ESxHmUos2B+\"}}"})
 
@@ -64,7 +64,7 @@ _(this will need review)_
 
 # TODO
 
-- Webhooks API Requests Body types (NOTE: the body for these will be an array of an appropriate sum type... annoying)
-- Receipt Message
+- Image Message (multipart with upload)
 - Tests
+- Webhooks API Requests Body types (NOTE: the body for these will be an array of an appropriate sum type... annoying)
 - Set up Travis, CircleCI or whatever is supported by bitbucket for testing
