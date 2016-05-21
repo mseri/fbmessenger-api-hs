@@ -90,8 +90,8 @@ instance FromJSON SendStructuredMessageRequest where
 
 -- | Informations about the recipient of the message
 data Recipient = Recipient 
-  { recipient_phone_number :: Maybe Text  -- Phone number of the recipient with the format +1(212)555-2368
-  , recipient_id           :: Maybe Text  -- ID of recipient
+  { recipient_phone_number :: Maybe Text  -- ^ Phone number of the recipient with the format +1(212)555-2368
+  , recipient_id           :: Maybe Text  -- ^ ID of recipient
   } deriving (Show, Generic)
 
 instance ToJSON Recipient where
@@ -103,7 +103,7 @@ instance FromJSON Recipient where
 
 -- | Content of the message for a text-only message
 data TextMessage = TextMessage 
-  { text_message_text :: Text       -- Message text, must be UTF-8, 320 character limit 
+  { text_message_text :: Text       -- ^ Message text, must be UTF-8, 320 character limit 
   } deriving (Show, Generic)
 
 instance ToJSON TextMessage where
@@ -114,9 +114,9 @@ instance FromJSON TextMessage where
 
 
 -- | Push notification type for the message
-data NotificationType = Regular        -- will emit a sound/vibration and a phone notification (default)
-                      | SilentPush     -- will just emit a phone notification
-                      | NoPush         -- will not emit either
+data NotificationType = Regular        -- ^ will emit a sound/vibration and a phone notification (default)
+                      | SilentPush     -- ^ will just emit a phone notification
+                      | NoPush         -- ^ will not emit either
                       deriving Show
 
 instance ToJSON NotificationType where
@@ -163,26 +163,26 @@ instance FromJSON MessageAttachment where
 data AttachmentPayload = 
     ImagePayload { img_url :: Text } 
   | GenericTemplate 
-    { gen_template_type  :: TemplateType          -- Value must be "generic"
-    , gen_elements       :: [BubbleElement]             -- Data for each bubble in message 
+    { gen_template_type  :: TemplateType          -- ^ Value must be "generic"
+    , gen_elements       :: [BubbleElement]       -- ^ Data for each bubble in message 
     }
   | ButtonTemplate  
-    { btn_template_type  :: TemplateType          -- Value must be "button"
-    , btn_text           :: Text                  -- Text that appears in main body
-    , btn_buttons        :: [Button]              -- Set of buttons that appear as call-to-actions
+    { btn_template_type  :: TemplateType          -- ^ Value must be "button"
+    , btn_text           :: Text                  -- ^ Text that appears in main body
+    , btn_buttons        :: [Button]              -- ^ Set of buttons that appear as call-to-actions
     }
   | ReceiptTemplate 
-    { rcp_template_type  :: TemplateType          -- Value should be "receipt"
-    , rcp_recipient_name :: Text                  -- Recipient's Name
-    , rcp_order_number   :: Text                  -- Order number. Must be unique
-    , rcp_currency       :: Text                  -- Currency for order
-    , rcp_payment_method :: Text                  -- Payment method details. This can be a custom string. Ex: 'Visa 1234'
-    , rcp_timestamp      :: Maybe Text            -- Timestamp of order
-    , rcp_order_url      :: Maybe Text            -- URL of order
-    , rcp_elements       :: [ReceiptItem]     -- Items in order       
-    , rcp_address        :: Maybe ShippingAddress -- Shipping address
-    , rcp_summary        :: PaymentSummary        -- Payment summary
-    , rcp_adjustment     :: PaymentAdjustments    -- Payment adjustments
+    { rcp_template_type  :: TemplateType          -- ^ Value should be "receipt"
+    , rcp_recipient_name :: Text                  -- ^ Recipient's Name
+    , rcp_order_number   :: Text                  -- ^ Order number. Must be unique
+    , rcp_currency       :: Text                  -- ^ Currency for order
+    , rcp_payment_method :: Text                  -- ^ Payment method details. This can be a custom string. Ex: 'Visa 1234'
+    , rcp_timestamp      :: Maybe Text            -- ^ Timestamp of order
+    , rcp_order_url      :: Maybe Text            -- ^ URL of order
+    , rcp_elements       :: [ReceiptItem]         -- ^ Items in order       
+    , rcp_address        :: Maybe ShippingAddress -- ^ Shipping address
+    , rcp_summary        :: PaymentSummary        -- ^ Payment summary
+    , rcp_adjustment     :: PaymentAdjustments    -- ^ Payment adjustments
     }     
   deriving (Show, Generic)
 
@@ -210,10 +210,10 @@ instance FromJSON TemplateType where
 
 -- | Button object for structured messages payloads
 data Button = Button 
-  { btn_type    :: ButtonType   -- Value is "web_url" or "postback"
-  , btn_title   :: Text         -- Button title
-  , btn_url     :: Maybe Text   -- For web_url buttons, this URL is opened in a mobile browser when the button is tapped. Required if type is "web_url"
-  , btn_payload :: Maybe Text   -- For postback buttons, this data will be sent back to you via webhook. Required if type is "postback"
+  { btn_type    :: ButtonType   -- ^ Value is "web_url" or "postback"
+  , btn_title   :: Text         -- ^ Button title
+  , btn_url     :: Maybe Text   -- ^ For web_url buttons, this URL is opened in a mobile browser when the button is tapped. Required if type is "web_url"
+  , btn_payload :: Maybe Text   -- ^ For postback buttons, this data will be sent back to you via webhook. Required if type is "postback"
   } deriving (Show, Generic)
 
 instance ToJSON Button where
@@ -238,11 +238,11 @@ instance FromJSON ButtonType where
 
 -- | Bubble element object for structured messages payloads
 data BubbleElement = BubbleElement
-  { elm_title      :: Text           -- Bubble title
-  , elm_item_url   :: Maybe Text     -- URL that is opened when bubble is tapped
-  , elm_image_url  :: Maybe Text     -- Bubble image
-  , elm_subtitle   :: Maybe Text     -- Bubble subtitle
-  , elm_buttons    :: Maybe [Button] -- Set of buttons that appear as call-to-actions
+  { elm_title      :: Text           -- ^ Bubble title
+  , elm_item_url   :: Maybe Text     -- ^ URL that is opened when bubble is tapped
+  , elm_image_url  :: Maybe Text     -- ^ Bubble image
+  , elm_subtitle   :: Maybe Text     -- ^ Bubble subtitle
+  , elm_buttons    :: Maybe [Button] -- ^ Set of buttons that appear as call-to-actions
   } deriving (Show, Generic)
 
 instance ToJSON BubbleElement where
@@ -254,7 +254,7 @@ instance FromJSON BubbleElement where
 
 -- | Content of the message for a structured message
 data StructuredMessage = StructuredMessage 
-  { structured_message_attachment :: MessageAttachment       -- Message text, must be UTF-8, 320 character limit 
+  { structured_message_attachment :: MessageAttachment -- ^ Message text, must be UTF-8, 320 character limit 
   } deriving (Show, Generic)
 
 instance ToJSON StructuredMessage where
@@ -291,12 +291,12 @@ instance ToJSON WelcomeMessage where
 
 -- TODO: replace these stubs with actual types
 data ReceiptItem = ReceiptItem 
-  { re_title     :: Text         --Title of item
-  , re_subtitle  :: Maybe Text   -- Subtitle of item
-  , re_quantity  :: Maybe Int    -- Quantity of item
-  , re_price     :: Maybe Int    -- Item price
-  , re_currency  :: Maybe Text   -- Currency of price
-  , re_image_url :: Maybe Text   -- Image URL of item
+  { re_title     :: Text         -- ^ Title of item
+  , re_subtitle  :: Maybe Text   -- ^ Subtitle of item
+  , re_quantity  :: Maybe Int    -- ^ Quantity of item
+  , re_price     :: Maybe Int    -- ^ Item price
+  , re_currency  :: Maybe Text   -- ^ Currency of price
+  , re_image_url :: Maybe Text   -- ^ Image URL of item
   } deriving (Show, Generic)
 
 instance ToJSON ReceiptItem where
@@ -306,12 +306,12 @@ instance FromJSON ReceiptItem where
   parseJSON = parseJsonDrop 3 
 
 data ShippingAddress = ShippingAddress 
-  { sa_street_1    :: Text       -- Street Address, line 1
-  , sa_street_2    :: Maybe Text -- Street Address, line 2
+  { sa_street_1    :: Text       -- ^ Street Address, line 1
+  , sa_street_2    :: Maybe Text -- ^ Street Address, line 2
   , sa_city        :: Text 
   , sa_postal_code :: Text
-  , sa_state       :: Text       -- State abbrevation
-  , sa_country     :: Text       -- Two-letter country abbreviation
+  , sa_state       :: Text       -- ^ State abbrevation
+  , sa_country     :: Text       -- ^ Two-letter country abbreviation
   } deriving (Show, Generic)
 
 instance ToJSON ShippingAddress where
@@ -334,8 +334,8 @@ instance FromJSON PaymentSummary where
   parseJSON = parseJsonDrop 3
   
 data PaymentAdjustments = PaymentAdjustments
-  { pa_name   :: Maybe Text     -- Name of adjustment
-  , pa_amount :: Maybe Double   -- Adjusted amount
+  { pa_name   :: Maybe Text     -- ^ Name of adjustment
+  , pa_amount :: Maybe Double   -- ^ Adjusted amount
   } deriving (Show, Generic)
 
 instance ToJSON PaymentAdjustments where
