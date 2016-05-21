@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
--- {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeOperators              #-}
 
@@ -9,11 +8,15 @@ module Web.FBMessenger.API.Bot.Requests
     ( -- * Types
       Button (..)
     , BubbleElement (..)
-    , Recipient (..)
-    , TextMessage (..)
     , NotificationType (..)
+    , PaymentSummary (..)
+    , PaymentAdjustments (..)
+    , Recipient (..)
+    , ReceiptItem (..)
+    , ShippingAddress (..)
     , SendTextMessageRequest (..)
     , SendStructuredMessageRequest (..)
+    , TextMessage (..)
     , WelcomeMessageRequest (..)
     -- * Functions
     , makeBubbleElement
@@ -21,8 +24,13 @@ module Web.FBMessenger.API.Bot.Requests
     , makeTextMessageRequest
     , makeGenericTemplateMessageRequest
     , makeImageMessageRequest
+    , makePaymentAdjustment
+    , makePaymentSummary
     , makeRecipient
+    , makeReceiptItem
+    , makeReceiptTemplateMessageRequest
     , makePostbackButton
+    , makeShippingAddress
     , makeWebUrlButton
     , makeWelcomeButtonTemplateMessageRequest
     , makeWelcomeGenericTemplateMessageRequest
@@ -31,13 +39,13 @@ module Web.FBMessenger.API.Bot.Requests
 ) where
 
 import           Data.Aeson
-import           Data.Aeson.Types
-import           Data.Maybe
-import           Data.Proxy
+--import           Data.Aeson.Types
+--import           Data.Maybe
+--import           Data.Proxy
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           GHC.Generics
-import           GHC.TypeLits
+--import           GHC.TypeLits
 import           Web.FBMessenger.API.Bot.JsonExt
 
 
@@ -171,7 +179,7 @@ data AttachmentPayload =
     , rcp_payment_method :: Text                  -- Payment method details. This can be a custom string. Ex: 'Visa 1234'
     , rcp_timestamp      :: Maybe Text            -- Timestamp of order
     , rcp_order_url      :: Maybe Text            -- URL of order
-    , rcp_elements       :: [ReceiptElements]     -- Items in order       
+    , rcp_elements       :: [ReceiptItem]     -- Items in order       
     , rcp_address        :: Maybe ShippingAddress -- Shipping address
     , rcp_summary        :: PaymentSummary        -- Payment summary
     , rcp_adjustment     :: PaymentAdjustments    -- Payment adjustments
@@ -282,11 +290,59 @@ instance ToJSON WelcomeMessage where
 --  parseJSON = parseJsonDrop 4 
 
 -- TODO: replace these stubs with actual types
-type ReceiptElements = Text
-type ShippingAddress = Text
-type PaymentSummary = Text
-type PaymentAdjustments = Text
+data ReceiptItem = ReceiptItem 
+  { re_title     :: Text         --Title of item
+  , re_subtitle  :: Maybe Text   -- Subtitle of item
+  , re_quantity  :: Maybe Int    -- Quantity of item
+  , re_price     :: Maybe Int    -- Item price
+  , re_currency  :: Maybe Text   -- Currency of price
+  , re_image_url :: Maybe Text   -- Image URL of item
+  } deriving (Show, Generic)
 
+instance ToJSON ReceiptItem where
+  toJSON = toJsonDrop 3
+  
+instance FromJSON ReceiptItem where
+  parseJSON = parseJsonDrop 3 
+
+data ShippingAddress = ShippingAddress 
+  { sa_street_1    :: Text       -- Street Address, line 1
+  , sa_street_2    :: Maybe Text -- Street Address, line 2
+  , sa_city        :: Text 
+  , sa_postal_code :: Text
+  , sa_state       :: Text       -- State abbrevation
+  , sa_country     :: Text       -- Two-letter country abbreviation
+  } deriving (Show, Generic)
+
+instance ToJSON ShippingAddress where
+  toJSON = toJsonDrop 3
+  
+instance FromJSON ShippingAddress where
+  parseJSON = parseJsonDrop 3
+  
+data PaymentSummary = PaymentSummary 
+  { ps_subtotal      :: Maybe Double
+  , ps_shipping_cost :: Maybe Double
+  , ps_total_tax     :: Maybe Double
+  , ps_total_cost    :: Double
+  } deriving (Show, Generic)
+
+instance ToJSON PaymentSummary where
+  toJSON = toJsonDrop 3
+  
+instance FromJSON PaymentSummary where
+  parseJSON = parseJsonDrop 3
+  
+data PaymentAdjustments = PaymentAdjustments
+  { pa_name   :: Maybe Text     -- Name of adjustment
+  , pa_amount :: Maybe Double   -- Adjusted amount
+  } deriving (Show, Generic)
+
+instance ToJSON PaymentAdjustments where
+  toJSON = toJsonDrop 3
+  
+instance FromJSON PaymentAdjustments where
+  parseJSON = parseJsonDrop 3
 
 -- TODO: implement constructors for
 -- receiptTemplateMessage
@@ -353,6 +409,28 @@ makeButtonTemplateMessageRequest nt r t bts = SendStructuredMessageRequest
   where attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
         payload    = ButtonTemplate{ btn_template_type = ButtonTType, btn_text = t, btn_buttons = bts }
 
+-- TODO: document function
+makeReceiptTemplateMessageRequest :: Maybe NotificationType -> Recipient -> Text -> Text -> Text -> Text -> Maybe Text
+                                           -> Maybe Text -> [ReceiptItem] -> Maybe ShippingAddress -> PaymentSummary -> PaymentAdjustments
+                                           -> SendStructuredMessageRequest
+makeReceiptTemplateMessageRequest nt r nm on cu pm ts ou els ad su aj = SendStructuredMessageRequest
+  { structured_message_recipient         = r
+  , structured_message_message           = structuredMessage attachment         
+  , structured_message_notification_type = nt }
+  where attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
+        payload    = ReceiptTemplate 
+          { rcp_template_type  = ReceiptTType
+          , rcp_recipient_name = nm
+          , rcp_order_number   = on
+          , rcp_currency       = cu
+          , rcp_payment_method = pm
+          , rcp_timestamp      = ts
+          , rcp_order_url      = ou
+          , rcp_elements       = els       
+          , rcp_address        = ad
+          , rcp_summary        = su
+          , rcp_adjustment     = aj
+          }
 
 -- | Take a text. Return a WelcomeMessageRequest
 makeWelcomeTextMessageRequest :: Text -> WelcomeMessageRequest
@@ -395,6 +473,19 @@ makeWelcomeButtonTemplateMessageRequest t bts = WelcomeMessageRequest
   where wm         = WelcomeStructuredMessage{ wsm_message = structuredMessage attachment }
         attachment = MessageAttachment{ message_attachment_type = AttachmentTemplate, message_attachment_payload = payload }
         payload    = ButtonTemplate{ btn_template_type = ButtonTType, btn_text = t, btn_buttons = bts }
+
+-- TODO: document commands
+makeReceiptItem :: Text -> Maybe Text -> Maybe Int -> Maybe Int -> Maybe Text -> Maybe Text -> ReceiptItem
+makeReceiptItem t s q p c i = ReceiptItem{ re_title = t, re_subtitle = s, re_quantity = q, re_price = p, re_currency = c, re_image_url = i } 
+
+makeShippingAddress :: Text -> Maybe Text -> Text -> Text -> Text -> Text -> ShippingAddress
+makeShippingAddress s1 s2 ct p s co = ShippingAddress{ sa_street_1 = s1 , sa_street_2 = s2, sa_city = ct, sa_postal_code = p, sa_state = s, sa_country = co } 
+
+makePaymentSummary :: Maybe Double -> Maybe Double -> Maybe Double -> Double -> PaymentSummary
+makePaymentSummary st sc tt tc = PaymentSummary{ ps_subtotal = st, ps_shipping_cost = sc, ps_total_tax = tt, ps_total_cost = tc } 
+
+makePaymentAdjustment :: Maybe Text -> Maybe Double -> PaymentAdjustments
+makePaymentAdjustment n a = PaymentAdjustments{ pa_name = n, pa_amount = a }
 
 
 -- Helpers, not exported
