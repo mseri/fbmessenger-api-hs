@@ -14,8 +14,6 @@ module Web.FBMessenger.API.Bot.JsonExt
 
 import           Data.Aeson
 import           Data.Aeson.Types
-import           GHC.Generics
-import           GHC.TypeLits
 
 -- | Method used to drop prefix from field name during serialization
 toJsonDrop prefix = genericToJSON defaultOptions {

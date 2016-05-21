@@ -20,7 +20,7 @@ module Web.FBMessenger.API.Bot.SendAPI
   ) where
 
 
-import           Control.Monad.Trans.Except (ExceptT, runExceptT)
+import           Control.Monad.Trans.Except (runExceptT) -- ExceptT
 import           Data.Proxy
 import           Data.Text (Text)
 import qualified Data.Text as T
@@ -73,13 +73,14 @@ type FBMessengerSendAPI =
 api :: Proxy FBMessengerSendAPI
 api = Proxy
 
-sendTextMessage_       ::               Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-uploadImageMessage_    :: Maybe Token -> UploadImageMessageRequest FileUpload -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-sendStructuredMessage_ ::         Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO MessageResponse
-subscribedApps_        ::                                         Maybe Token -> Manager -> BaseUrl -> ExceptT ServantError IO SubscriptionResponse
-welcomeMessage_        ::        Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
-deleteWMessage_        ::        Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ExceptT ServantError IO WelcomeMessageResponse
-userProfile_           ::                   Maybe Token -> Maybe Text -> Text -> Manager -> BaseUrl -> ExceptT ServantError IO UserProfileResponse
+-- type ClientM = ExceptT ServantError IO
+sendTextMessage_       ::               Maybe Token -> SendTextMessageRequest -> Manager -> BaseUrl -> ClientM MessageResponse
+uploadImageMessage_    :: Maybe Token -> UploadImageMessageRequest FileUpload -> Manager -> BaseUrl -> ClientM MessageResponse
+sendStructuredMessage_ ::         Maybe Token -> SendStructuredMessageRequest -> Manager -> BaseUrl -> ClientM MessageResponse
+subscribedApps_        ::                                         Maybe Token -> Manager -> BaseUrl -> ClientM SubscriptionResponse
+welcomeMessage_        ::        Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ClientM WelcomeMessageResponse
+deleteWMessage_        ::        Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> BaseUrl -> ClientM WelcomeMessageResponse
+userProfile_           ::                   Maybe Token -> Maybe Text -> Text -> Manager -> BaseUrl -> ClientM UserProfileResponse
 
 sendTextMessage_
   :<|> uploadImageMessage_
@@ -136,5 +137,5 @@ welcomeDeleteMessage = WelcomeMessageRequest
   , wm_thread_state    = T.pack "new_thread"
   , wm_call_to_actions = [] }
 
-run :: BaseUrl -> (Maybe Token -> a -> Manager -> BaseUrl -> ExceptT ServantError IO b) -> Maybe Token -> a -> Manager -> IO (Either ServantError b)
+run :: BaseUrl -> (Maybe Token -> a -> Manager -> BaseUrl -> ClientM b) -> Maybe Token -> a -> Manager -> IO (Either ServantError b)
 run b e t r m = runExceptT $ e t r m b

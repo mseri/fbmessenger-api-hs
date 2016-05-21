@@ -94,7 +94,8 @@ instance FromJSON NotificationType where
   parseJSON _             = fail "Failed to parse NotificationType"
 
 
--- | Content of the message for a text-only message
+-- | Content of the message for a text-only message.
+--   The message text must be UTF-8 and there is a limit of 320 characters
 data TextMessage = TextMessage 
   { text_message_text :: Text       -- Message text, must be UTF-8, 320 character limit 
   } deriving (Show, Generic)
@@ -150,7 +151,19 @@ instance FromJSON AttachmentType where
   parseJSON "template" = pure AttachmentTemplate
   parseJSON _          = fail "Failed to parse AttachmentType"
   
--- | Payload of attachment for structured messages
+-- | Payload of attachment for structured messages.
+--
+--   Although not enforced in any way by this wrapper, the following generic limits are in place
+--   (see also https://developers.facebook.com/docs/messenger-platform/send-api-reference#guidelines)
+--
+--       Title: 80 characters
+--       Subtitle: 80 characters
+--       Call-to-action title: 20 characters
+--       Call-to-action items: 3 buttons
+--       Bubbles per message (horizontal scroll): 10 elements
+--       
+--       Image ratio is 1.91:1
+--
 data AttachmentPayload = 
     ImagePayload { img_url :: Text } 
   | GenericTemplate 
@@ -167,13 +180,13 @@ data AttachmentPayload =
     , rcp_recipientname :: Text                      -- ^ Recipient's Name
     , rcp_order_number   :: Text                      -- ^ Order number. Must be unique
     , rcp_currency       :: Text                      -- ^ Currency for order
-    , rcp_payment_method :: Text                      -- ^ Payment method details. This can be a custom string. Ex: 'Visa 1234'
+    , rcp_payment_method :: Text                      -- ^ Payment method details. You may insert an arbitrary string but it is recommended to provide enough information for the person to decipher which payment method and account they used number)
     , rcp_timestamp      :: Maybe Text                -- ^ Timestamp of order
     , rcp_order_url      :: Maybe Text                -- ^ URL of order
     , rcp_elements       :: [ReceiptItem]             -- ^ Items in order       
-    , rcp_address        :: Maybe ShippingAddress     -- ^ Shipping address
+    , rcp_address        :: Maybe ShippingAddress     -- ^ Shipping address. If you do not ship an item, you may omit the field
     , rcp_summary        :: PaymentSummary            -- ^ Payment summary
-    , rcp_adjustment     :: Maybe [PaymentAdjustment] -- ^ Payment adjustments
+    , rcp_adjustment     :: Maybe [PaymentAdjustment] -- ^ Payment adjustments. Allow a way to insert adjusted pricing (e.g., sales)
     }
   | EmptyPayload {}                                   -- ^ Only used for multipart image messages 
   deriving (Show, Generic)

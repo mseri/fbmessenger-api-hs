@@ -36,6 +36,8 @@ library
                      , http-types
                      , mime-types
                      , string-conversions
+                     -- for more direct error responses manipulation
+                     , case-insensitive
                      -- for tlsDefaultManager while testing on ghci
                      , http-client-tls
   default-language:    Haskell2010
