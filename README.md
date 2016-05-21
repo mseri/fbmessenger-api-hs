@@ -24,31 +24,21 @@ Che dici?
 
 # Usage
 
-Before being able to test and use the bot, you will need to verify your key.
+Before being able to test and use the bot, you will need to verify your key. 
+The example app in `example-app/example.hs` contains a servant server that implements the verification.
+You can run it with
 
-> NOTE: I attach for now the nodejs example. We will have to provide a simple Haskell sample implementation. 
-
-```{.js}
-// Node.js Example
-app.get('/webhook', function (req, res) {
-  if (req.query['hub.verify_token'] === <YOUR_VERIFY_TOKEN>) {
-    res.send(req.query['hub.challenge']);
-  } else {
-    res.send('Error, wrong validation token');    
-  }
-});
-```
-
-... todo ...
+     VERIFY_TOKEN="your_token_goes_here" stack exec example  
 
 Run `stack ghci` then copy and paste the following
 
     :m +Network.HTTP.Client
     :m +Network.HTTP.Client.TLS
     :m +Data.Text
-
+    
+    let token = Token $ Data.Text.pack "your_token_goes_here"
     let manager = newManager tlsManagerSettings
-    manager >>= \m -> subscribedApps (Just $ Token $ Data.Text.pack "souncazzo") m
+    manager >>= \m -> subscribedApps $ Just token m
 
 You should get the response: 
 
