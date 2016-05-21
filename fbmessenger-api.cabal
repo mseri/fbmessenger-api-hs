@@ -29,9 +29,26 @@ library
                      , http-client-tls
                      , servant == 0.7.*
                      , servant-client == 0.7.*
+                     , servant-server == 0.7.*
                      , text
                      , transformers
+                     , wai
+                     , warp
   default-language:    Haskell2010
+
+executable example
+  main-is:            example.hs
+  hs-source-dirs:     example-app
+  ghc-options:        -fwarn-tabs -O2 -Wall -threaded
+  build-depends:      base,
+                      aeson,
+                      servant == 0.7.*,
+                      servant-server == 0.7.*,
+                      stm,
+                      text,
+                      transformers,
+                      warp
+  default-language:   Haskell2010
 
 test-suite fbmessenger-api-test
   type:                exitcode-stdio-1.0
