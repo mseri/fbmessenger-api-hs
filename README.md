@@ -56,15 +56,15 @@ You can use stack to build project
 
     stack build
 
-To run test you have to create your own bot. Keep your access token safe!
+To run tests
 
-    stack test --test-arguments "$BOT_TOKEN"
+    stack test
 
 _(this will need review)_
 
 # TODO
 
-- Webhooks API (NOTE: the body for these will be an array of an appropriate sum type... annoying)
-- Send API
+- Webhooks API Requests Body types (NOTE: the body for these will be an array of an appropriate sum type... annoying)
+- Receipt Message
 - Tests
-- Set up Travis or whatever for testing
+- Set up Travis, CircleCI or whatever is supported by bitbucket for testing

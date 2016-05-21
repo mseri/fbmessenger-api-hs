@@ -18,7 +18,7 @@ module Web.FBMessenger.API.Bot.SendAPI
   , Token                  (..)
   ) where
 
--- ExceptT is practically the same as EitherT
+
 import           Control.Monad.Trans.Except (ExceptT, runExceptT)
 import           Data.Aeson
 import           Data.Aeson.Types
@@ -112,8 +112,8 @@ removeWelcomeMessage token pageId manager = runExceptT $ deleteWMessage_ token p
 
 -- | Get the profile informations of a user. In addition to the token, you need to provide the user_id.
 --   Returns a record containing the profile informations.
-getUserProfileInfo :: Token -> Text -> Manager -> ExceptT ServantError IO UserProfileResponse
-getUserProfileInfo token userdId manager = runExceptT $ userProfile_ token userProfileFields userId manager graphAPIBaseUrl
+getUserProfileInfo :: Maybe Token -> Text -> Manager -> IO (Either ServantError UserProfileResponse)
+getUserProfileInfo token userId manager = runExceptT $ userProfile_ token userProfileFields userId manager graphAPIBaseUrl
 
 
 -- Helpers (not exported)
