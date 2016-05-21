@@ -1,12 +1,13 @@
 {-# LANGUAGE DataKinds                  #-}
--- {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeOperators              #-}
 
 module Web.FBMessenger.API.Bot.SendAPI 
   ( -- * Functions
-    sendTextMessage
+    getUserProfileInfo
+  , removeWelcomeMessage
+  , sendTextMessage
   , sendStructuredMessage
   , setWelcomeMessage
   , subscribedApps
@@ -86,22 +87,34 @@ sendTextMessage_
   :<|> userProfile_ = client api
 
 
--- | Use this method to send text messages. On success, minor informations on the sent message are returned.
+-- | Send text messages. On success, minor informations on the sent message are returned.
 sendTextMessage :: Maybe Token -> SendTextMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendTextMessage = run graphAPIBaseUrl sendTextMessage_
 
--- | Use this method to send structured messages containing an image. On success, minor informations on the sent message are returned.
+-- | Send structured messages containing an image. On success, minor informations on the sent message are returned.
 sendStructuredMessage :: Maybe Token -> SendStructuredMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 
--- | A simple method for testing your bot's auth token. Requires no parameters.
+-- | Test if your bot's auth token is enabled. Requires no parameters.
 --   Returns a simple object containing a boolean value indicating if the token is correctly registered.
 subscribedApps :: Maybe Token -> Manager -> IO (Either ServantError SubscriptionResponse)
 subscribedApps token manager = runExceptT $ subscribedApps_ token manager graphAPIBaseUrl
 
--- TODO
+-- | Set a welcome message. In addition to the token and the message request, you need to provide the facebook page_id.
+--   Returns a simple object containing a string indicating if the welcome message is correctly registered.
 setWelcomeMessage :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> IO (Either ServantError WelcomeMessageResponse)
 setWelcomeMessage token pageId message manager = runExceptT $ welcomeMessage_ token pageId message manager graphAPIBaseUrl
+
+-- | Remove the welcome message. In addition to the token, you need to provide the facebook page_id.
+--   Returns a simple object containing a string indicating if the welcome message is correctly removed.
+removeWelcomeMessage :: Maybe Token -> Text -> Manager -> IO (Either ServantError WelcomeMessageResponse)
+removeWelcomeMessage token pageId manager = runExceptT $ deleteWMessage_ token pageId welcomeDeleteMessage manager graphAPIBaseUrl
+
+-- | Get the profile informations of a user. In addition to the token, you need to provide the user_id.
+--   Returns a record containing the profile informations.
+getUserProfileInfo :: Token -> Text -> Manager -> ExceptT ServantError IO UserProfileResponse
+getUserProfileInfo token userdId manager = runExceptT $ userProfile_ token userProfileFields userId manager graphAPIBaseUrl
+
 
 -- Helpers (not exported)
 
