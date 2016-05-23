@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  ghc-options:         -Wall -fwarn-tabs
+  ghc-options:         -Wall -fwarn-tabs -fno-warn-name-shadowing -fwarn-pointless-pragmas
   exposed-modules:     Web.FBMessenger.API.Bot
                      , Web.FBMessenger.API.Bot.SendAPI
                      , Web.FBMessenger.API.Bot.Responses

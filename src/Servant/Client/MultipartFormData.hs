@@ -25,7 +25,6 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Except
 import           Data.ByteString.Lazy       hiding (pack, filter, map, null, elem)
 import           Data.Proxy
-import           GHC.TypeLits
 import           Data.String.Conversions
 import           Data.Typeable              (Typeable)
 import           Network.HTTP.Client        hiding (Proxy, path)
@@ -36,17 +35,8 @@ import           Network.HTTP.Types
 import qualified Network.HTTP.Types         as H
 import qualified Network.HTTP.Types.Header  as HTTP
 import           Servant.API
-import           Servant.API.Verbs
-import           Servant.Common.BaseUrl
 import           Servant.Client
 import           Servant.Common.Req
-
-import           Data.ByteString.Lazy       (ByteString)
-import           Data.List
-import           Data.Text                  (unpack)
-import           Network.HTTP.Client        (Manager, Response)
-import           Servant.Client.Experimental.Auth
-import           Servant.Common.BasicAuth
 
 -- | A type that can be converted to a multipart/form-data value.
 class ToMultipartFormData a where
