@@ -59,3 +59,5 @@ spec = do
             run (\l -> (decode l) :: Maybe WelcomeMessageResponse) "welcomeMessageResponse.json"
             `shouldBe`
             Just (WelcomeMessageResponse $ T.pack "Successfully added new_thread's CTAs")
+            
+        -- TODO: Error responses
