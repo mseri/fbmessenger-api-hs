@@ -60,7 +60,7 @@ import           Web.FBMessenger.API.Bot.JsonExt
 data Recipient = Recipient 
   { recipientphone_number :: Maybe Text  -- ^ Phone number of the recipient with the format +1(212)555-2368
   , recipientid           :: Maybe Text  -- ^ ID of recipient
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON Recipient where
     toJSON = toJsonDrop 10
@@ -80,7 +80,7 @@ recipient rid phone_number  = pure $ Recipient rid phone_number
 data NotificationType = Regular        -- ^ will emit a sound/vibration and a phone notification (default)
                       | SilentPush     -- ^ will just emit a phone notification
                       | NoPush         -- ^ will not emit either
-                      deriving Show
+                      deriving (Eq, Show)
 
 instance ToJSON NotificationType where
   toJSON Regular    = "REGULAR"
@@ -98,7 +98,7 @@ instance FromJSON NotificationType where
 --   The message text must be UTF-8 and there is a limit of 320 characters
 data TextMessage = TextMessage 
   { text_message_text :: Text       -- Message text, must be UTF-8, 320 character limit 
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON TextMessage where
     toJSON = toJsonDrop 13
@@ -111,7 +111,7 @@ data SendTextMessageRequest = SendTextMessageRequest
   { message_recipient         :: Recipient
   , message_message           :: TextMessage
   , message_notification_type :: Maybe NotificationType
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON SendTextMessageRequest where
   toJSON = toJsonDrop 8
@@ -129,7 +129,7 @@ sendTextMessageRequest notificationType recipient text = SendTextMessageRequest 
 data MessageAttachment = MessageAttachment
   { message_attachment_type    :: AttachmentType
   , message_attachment_payload :: AttachmentPayload
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON MessageAttachment where
     toJSON = toJsonDrop 19
@@ -140,7 +140,7 @@ instance FromJSON MessageAttachment where
 -- | Type of attachment for a structured message
 data AttachmentType = AttachmentImage 
                     | AttachmentTemplate 
-                    deriving Show
+                    deriving (Eq, Show)
 
 instance ToJSON AttachmentType where
   toJSON AttachmentImage    = "image"
@@ -189,7 +189,7 @@ data AttachmentPayload =
     , rcp_adjustment     :: Maybe [PaymentAdjustment] -- ^ Payment adjustments. Allow a way to insert adjusted pricing (e.g., sales)
     }
   | EmptyPayload {}                                   -- ^ Only used for multipart image messages 
-  deriving (Show, Generic)
+  deriving (Eq, Show, Generic)
 
 instance ToJSON AttachmentPayload where
     toJSON = toJsonDrop 4
@@ -198,7 +198,7 @@ instance FromJSON AttachmentPayload where
     parseJSON = parseJsonDrop 4
 
 -- | Template type for structured messages
-data TemplateType = GenericTType | ButtonTType | ReceiptTType deriving (Show)
+data TemplateType = GenericTType | ButtonTType | ReceiptTType deriving (Eq, Show)
 
 instance ToJSON TemplateType where
   toJSON GenericTType = "generic"
@@ -212,7 +212,7 @@ instance FromJSON TemplateType where
   parseJSON _         = fail "Failed to parse TemplateType"
 
 -- | Type for Button objects. See Button type for additional informations.
-data ButtonType = WebUrl | Postback deriving (Show)
+data ButtonType = WebUrl | Postback deriving (Eq, Show)
 
 instance ToJSON ButtonType where
   toJSON WebUrl    = "web_url"
@@ -229,7 +229,7 @@ data Button = Button
   , btn_title   :: Text         -- ^ Button title
   , btn_url     :: Maybe Text   -- ^ For web_url buttons, this URL is opened in a mobile browser when the button is tapped. Required if type is "web_url"
   , btn_payload :: Maybe Text   -- ^ For postback buttons, this data will be sent back to you via webhook. Required if type is "postback"
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON Button where
     toJSON = toJsonDrop 4
@@ -254,7 +254,7 @@ data BubbleElement = BubbleElement
   , elm_image_url  :: Maybe Text     -- ^ Bubble image
   , elm_subtitle   :: Maybe Text     -- ^ Bubble subtitle
   , elm_buttons    :: Maybe [Button] -- ^ Set of buttons that appear as call-to-actions
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON BubbleElement where
     toJSON = toJsonDrop 4
@@ -274,7 +274,7 @@ data ReceiptItem = ReceiptItem
   , re_price     :: Maybe Int    -- ^ Item price
   , re_currency  :: Maybe Text   -- ^ Currency of price
   , re_image_url :: Maybe Text   -- ^ Image URL of item
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON ReceiptItem where
   toJSON = toJsonDrop 3
@@ -293,7 +293,7 @@ data ShippingAddress = ShippingAddress
   , sa_postal_code :: Text       -- ^ Postal Code
   , sa_state       :: Text       -- ^ State abbrevation
   , sa_country     :: Text       -- ^ Two-letter country abbreviation
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON ShippingAddress where
   toJSON = toJsonDrop 3
@@ -310,7 +310,7 @@ data PaymentSummary = PaymentSummary
   , ps_shipping_cost :: Maybe Double  -- ^ Shipping Cost
   , ps_total_tax     :: Maybe Double  -- ^ Total Tax
   , ps_total_cost    :: Double        -- ^ Total Cost
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON PaymentSummary where
   toJSON = toJsonDrop 3
@@ -324,7 +324,7 @@ paymentSummary totalCost = PaymentSummary Nothing Nothing Nothing totalCost
 data PaymentAdjustment = PaymentAdjustment
   { pa_name   :: Maybe Text     -- ^ Name of adjustment
   , pa_amount :: Maybe Double   -- ^ Adjusted amount
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON PaymentAdjustment where
   toJSON = toJsonDrop 3
@@ -335,7 +335,7 @@ instance FromJSON PaymentAdjustment where
 -- | Content of the message for a structured message
 data StructuredMessage = StructuredMessage 
   { structured_message_attachment :: MessageAttachment -- ^ Message text, must be UTF-8, 320 character limit 
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON StructuredMessage where
     toJSON = toJsonDrop 19
@@ -348,7 +348,7 @@ data SendStructuredMessageRequest = SendStructuredMessageRequest
   { structured_message_recipient         :: Recipient
   , structured_message_message           :: StructuredMessage         
   , structured_message_notification_type :: Maybe NotificationType
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON SendStructuredMessageRequest where
   toJSON = toJsonDrop 19
@@ -401,7 +401,7 @@ sendReceiptTemplateMessageRequest notificationType recipient
 data WelcomeMessage = 
     WelcomeTextMessageMessage { wtm_message :: TextMessage } 
   | WelcomeStructuredMessage { wsm_message :: StructuredMessage } 
-  deriving (Show, Generic)
+  deriving (Eq, Show, Generic)
   
 instance ToJSON WelcomeMessage where
   toJSON = toJsonDrop 4
@@ -414,7 +414,7 @@ data WelcomeMessageRequest = WelcomeMessageRequest
   { wm_setting_type    :: Text
   , wm_thread_state    :: Text
   , wm_call_to_actions :: [WelcomeMessage]
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON WelcomeMessageRequest where
   toJSON = toJsonDrop 3
@@ -493,7 +493,7 @@ data UploadImageMessageRequest payload = UploadImageMessageRequest
     immr_recipient                  :: Recipient        -- ^ Recipient user
   , immr_file_data                  :: payload           -- ^ Photo to send. Formats supported: jpg and png.
   , immr_message                    :: MessageAttachment -- ^ This MUST be MessageAttachment AttachmentImage EmptyPayload{}
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON (UploadImageMessageRequest Text) where
   toJSON = toJsonDrop 5

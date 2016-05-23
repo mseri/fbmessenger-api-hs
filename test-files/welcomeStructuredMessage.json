@@ -1,0 +1,36 @@
+{
+  "setting_type":"call_to_actions",
+  "thread_state":"new_thread",
+  "call_to_actions":[
+    {
+      "message":{
+        "attachment":{
+          "type":"template",
+          "payload":{
+            "template_type":"generic",
+            "elements":[
+              {
+                "title":"Welcome to My Company!",
+                "item_url":"https://www.petersbowlerhats.com",
+                "image_url":"https://www.petersbowlerhats.com/img/hat.jpeg",
+                "subtitle":"We have the right hat for everyone.",
+                "buttons":[
+                  {
+                    "type":"web_url",
+                    "title":"View Website",
+                    "url":"https://www.petersbowlerhats.com"
+                  },
+                  {
+                    "type":"postback",
+                    "title":"Start Chatting",
+                    "payload":"DEVELOPER_DEFINED_PAYLOAD"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+    "recipient":{
+        "id":"USER_ID"
+    }, 
+    "message":{
+        "text":"hello, world!"
+    }
+}

@@ -12,6 +12,7 @@ category:            Web
 build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10
+data-files:          test-files/*.json
 
 library
   hs-source-dirs:      src
@@ -39,7 +40,7 @@ library
                      -- for more direct error responses manipulation
                      , case-insensitive
                      -- for tlsDefaultManager while testing on ghci
-                     , http-client-tls
+                     -- , http-client-tls
   default-language:    Haskell2010
 
 executable example
@@ -61,10 +62,14 @@ test-suite fbmessenger-api-test
   hs-source-dirs:      test
   main-is:             Spec.hs
   build-depends:       base
+                     , aeson
+                     , bytestring
                      , fbmessenger-api
+                     , filepath
                      , hspec
-                     , http-client-tls
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+                     , text
+                     -- , http-client-tls
+  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 source-repository head

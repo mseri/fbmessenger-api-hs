@@ -1,0 +1,13 @@
+{
+  "recipient":{
+    "id":"USER_ID"
+  },
+  "message":{
+    "attachment":{
+      "type":"image",
+      "payload":{
+        "url":"https://petersapparel.com/img/shirt.png"
+      }
+    }
+  }
+}

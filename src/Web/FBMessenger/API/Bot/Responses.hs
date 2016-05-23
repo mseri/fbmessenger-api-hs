@@ -6,12 +6,12 @@
 -- | This module contains responses from Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Responses 
   ( -- * Types 
-    SendErrorCode
-  , SendErrorObject
-  , MessageResponse (..)
-  , SubscriptionResponse (..)
-  , UserProfileResponse
-  , WelcomeMessageResponse
+    SendErrorCode          (..)
+  , SendErrorObject        (..)
+  , MessageResponse        (..)
+  , SubscriptionResponse   (..)
+  , UserProfileResponse    (..)
+  , WelcomeMessageResponse (..)
   -- * Functions
   , sendErrorInfo
   , extractSendError
@@ -25,7 +25,7 @@ import           Web.FBMessenger.API.Bot.JsonExt
 
 
 -- | This object represents the 'subscribed_apps' success response
-data SubscriptionResponse = SubscriptionResponse{ subscription_success :: Bool } deriving (Show, Generic)
+data SubscriptionResponse = SubscriptionResponse{ subscription_success :: Bool } deriving (Eq, Show, Generic)
 
 instance ToJSON SubscriptionResponse where
   toJSON = toJsonDrop 13
@@ -37,7 +37,7 @@ instance FromJSON SubscriptionResponse where
 data MessageResponse = MessageResponse 
   { message_response_recipient_id :: Text
   , message_response_message_id   :: Text
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
 
 instance ToJSON MessageResponse where
   toJSON = toJsonDrop 17
@@ -54,7 +54,7 @@ data UserProfileResponse = UserProfileResponse
   , usr_locale      :: Text
   , usr_timezone    :: Int
   , usr_gender      :: Text 
-  } deriving (Show, Generic)
+  } deriving (Eq, Show, Generic)
   
 instance ToJSON UserProfileResponse where
   toJSON = toJsonDrop 4
@@ -64,7 +64,7 @@ instance FromJSON UserProfileResponse where
 
 
 -- | This objects contains informations on the succesful setup of a welcome message
-data WelcomeMessageResponse = WelcomeMessageResponse { wmr_result :: Text } deriving (Show, Generic)
+data WelcomeMessageResponse = WelcomeMessageResponse { wmr_result :: Text } deriving (Eq, Show, Generic)
 
 instance ToJSON WelcomeMessageResponse where
   toJSON = toJsonDrop 4
@@ -73,7 +73,7 @@ instance FromJSON WelcomeMessageResponse where
   parseJSON = parseJsonDrop 4
 
 
-data SendErrorWrapperObject = SendErrorWrapperObject { ewo_error :: SendErrorObject } deriving (Show, Generic)
+data SendErrorWrapperObject = SendErrorWrapperObject { ewo_error :: SendErrorObject } deriving (Eq, Show, Generic)
 instance ToJSON SendErrorWrapperObject where
   toJSON = toJsonDrop 4
 instance FromJSON SendErrorWrapperObject where
@@ -90,7 +90,7 @@ instance FromJSON SendErrorWrapperObject where
 --       "fbtrace_id":"D2kxCybrKVw"
 --    }
 --  
-data SendErrorObject = SendErrorObject { eo_message :: Text, eo_type :: Text, eo_code :: Int, eo_error_data :: Text, eo_fbtrace_id :: Text } deriving (Show, Generic)
+data SendErrorObject = SendErrorObject { eo_message :: Text, eo_type :: Text, eo_code :: Int, eo_error_data :: Text, eo_fbtrace_id :: Text } deriving (Eq, Show, Generic)
 instance ToJSON SendErrorObject where
   toJSON = toJsonDrop 3
 instance FromJSON SendErrorObject where
@@ -104,7 +104,7 @@ instance FromJSON SendErrorObject where
 --   100   No matching user found
 --   613   Calls to this api have exceeded the rate limit.
 --
-data SendErrorCode = InternalServerError | UnauthorizedApplication | NoMatchingUserFound | RateLimitError | Other deriving (Show) 
+data SendErrorCode = InternalServerError | UnauthorizedApplication | NoMatchingUserFound | RateLimitError | Other deriving (Eq, Show) 
 
 -- | Take a Send API error object and return a tuple containing the error code and the error_data (seems to always be the description)
 sendErrorInfo :: SendErrorObject -> (SendErrorCode, Text)
