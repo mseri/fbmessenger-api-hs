@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TypeOperators              #-}
 
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds  #-}
 
 -- | This module contains responses from Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Responses 
@@ -100,14 +100,13 @@ instance FromJSON SendErrorObject where
   parseJSON = withObject "send error" $ \o ->
     let e = o .: "error"
         e' field = e >>= (.: field)
-        -- code = decode (e' "code") :: Maybe SendErrorCode
     in SendErrorObject <$>
        e' "message"    <*>
        e' "type"       <*>
        e' "code"       <*>
        e' "error_data" <*>
        e' "fbtrace_id"  
-    
+
 
 -- | Send API Error Codes (see: https://developers.facebook.com/docs/messenger-platform/send-api-reference#errors)
 --

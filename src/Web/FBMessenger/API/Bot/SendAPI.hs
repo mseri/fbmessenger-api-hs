@@ -132,10 +132,7 @@ userProfileFields :: Maybe Text
 userProfileFields = pure $ T.pack "first_name,last_name,profile_pic,locale,timezone,gender"
 
 welcomeDeleteMessage :: WelcomeMessageRequest
-welcomeDeleteMessage = WelcomeMessageRequest 
-  { wm_setting_type    = T.pack "call_to_actions"
-  , wm_thread_state    = T.pack "new_thread"
-  , wm_call_to_actions = [] }
+welcomeDeleteMessage = WelcomeEmptyMessage
 
 run :: BaseUrl -> (Maybe Token -> a -> Manager -> BaseUrl -> ClientM b) -> Maybe Token -> a -> Manager -> IO (Either ServantError b)
 run b e t r m = runExceptT $ e t r m b
