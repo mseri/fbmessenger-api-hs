@@ -1,26 +1,14 @@
 # FBMessenger API
 
 High-level bindings to the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform/) based on [servant](https://haskell-servant.github.io/) library.
-We try to maintain the structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
+We try to maintain the overall structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
 
 Useful links: 
 - [servant tutorial](http://haskell-servant.readthedocs.io/en/stable/tutorial)
 - [simple python bindings for the messenger api](https://github.com/geeknam/messengerbot)
-
-# Note per framp
-
-Ancora non mi è chiaro al 100% come strutturare la libreria. 
-Per ora ho convertito quello che stavo facendo in una implementazione delle Send API.
-Piano piano la implemento tutta.
-
-Per il resto pensavo:
-
-Rimettiamo Data e ci mettiamo i tipi delle chiamate che Facebook fa al websocket, 
-così il bot si riduce a importare la libreria e implementare l'api che risponde alle chiamate di fb 
-usando i tipi che abbiamo già preimpostato nella libreria (a quel punto uno può usare quello che vuole,
-tanto servant-server quanto qualunque altro framework).
-
-Che dici? 
+- [bytemyapp](http://bitemyapp.com/archive.html)
+- [aeson tutorial](https://artyom.me/aeson)
+- [haskell is easy](https://haskelliseasy.readthedocs.io/en/latest/)
 
 # Usage
 
@@ -60,10 +48,8 @@ To run tests
 
     stack test
 
-_(this will need review)_
-
 # TODO
 
-- Tests
+- Tests for the network part of the api
 - Webhooks API Requests Body types (NOTE: the body for these will be an array of an appropriate sum type... annoying)
 - Set up Travis, CircleCI or whatever is supported by bitbucket for testing
