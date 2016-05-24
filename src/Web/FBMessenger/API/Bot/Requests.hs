@@ -4,6 +4,8 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeOperators              #-}
 
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+
 -- | This module contains data objects which represents requests to Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Requests 
     ( -- * Types
@@ -58,8 +60,8 @@ import           Web.FBMessenger.API.Bot.JsonExt
 
 -- | Informations about the recipient of the message
 data Recipient = Recipient 
-  { recipientphone_number :: Maybe Text  -- ^ Phone number of the recipient with the format +1(212)555-2368
-  , recipientid           :: Maybe Text  -- ^ ID of recipient
+  { recipient_id           :: Maybe Text  -- ^ ID of recipient
+  , recipient_phone_number :: Maybe Text  -- ^ Phone number of the recipient with the format +1(212)555-2368
   } deriving (Eq, Show, Generic)
 
 instance ToJSON Recipient where
@@ -135,7 +137,15 @@ instance ToJSON MessageAttachment where
     toJSON = toJsonDrop 19
 
 instance FromJSON MessageAttachment where
-    parseJSON = parseJsonDrop 19
+    -- parseJSON = parseJsonDrop 19
+    parseJSON = withObject "message attachment" $ \o -> do
+      t <- o .: "type" 
+      case decode (LBS.pack t) :: Maybe AttachmentType of
+        Just AttachmentImage -> MessageAttachment AttachmentImage <$> o .: "url"
+        Just AttachmentTemplate -> undefined
+        Nothing -> fail "unable to parse attachment type" 
+ 
+      
 
 -- | Type of attachment for a structured message
 data AttachmentType = AttachmentImage 
@@ -177,7 +187,7 @@ data AttachmentPayload =
     }
   | ReceiptTemplate 
     { rcp_template_type  :: TemplateType              -- ^ Value should be "receipt"
-    , rcp_recipientname :: Text                      -- ^ Recipient's Name
+    , rcp_recipientname  :: Text                      -- ^ Recipient's Name
     , rcp_order_number   :: Text                      -- ^ Order number. Must be unique
     , rcp_currency       :: Text                      -- ^ Currency for order
     , rcp_payment_method :: Text                      -- ^ Payment method details. You may insert an arbitrary string but it is recommended to provide enough information for the person to decipher which payment method and account they used number)

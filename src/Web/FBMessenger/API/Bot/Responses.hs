@@ -1,7 +1,10 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators              #-}
+
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 -- | This module contains responses from Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Responses 
@@ -9,7 +12,6 @@ module Web.FBMessenger.API.Bot.Responses
     MessageResponse        (..)
   , SendErrorCode          (..)
   , SendErrorObject        (..)
-  , SendErrorWrapperObject (..)
   , SubscriptionResponse   (..)
   , UserProfileResponse    (..)
   , WelcomeMessageResponse (..)
@@ -73,14 +75,6 @@ instance ToJSON WelcomeMessageResponse where
 instance FromJSON WelcomeMessageResponse where
   parseJSON = parseJsonDrop 4
 
--- | This objects contains informations on eventual errors. 
---   When using servant, you can use 'extractSendError' to extract useful informations from the ServantError error.
-data SendErrorWrapperObject = SendErrorWrapperObject { ewo_error :: SendErrorObject } deriving (Eq, Show, Generic)
-instance ToJSON SendErrorWrapperObject where
-  toJSON = toJsonDrop 4
-instance FromJSON SendErrorWrapperObject where
-  parseJSON = parseJsonDrop 4
-
 -- | Send API Error response object (see: https://developers.facebook.com/docs/messenger-platform/send-api-reference#errors)
 -- 
 --   {
@@ -92,11 +86,28 @@ instance FromJSON SendErrorWrapperObject where
 --       "fbtrace_id":"D2kxCybrKVw"
 --    }
 --  
-data SendErrorObject = SendErrorObject { eo_message :: Text, eo_type :: Text, eo_code :: SendErrorCode, eo_error_data :: Text, eo_fbtrace_id :: Text } deriving (Eq, Show, Generic)
+data SendErrorObject = SendErrorObject { eoMessage :: Text, eoType :: Text, eoCode :: SendErrorCode, eoErrorData :: Text, eoFbtraceId :: Text } deriving (Eq, Show, Generic)
+                           
 instance ToJSON SendErrorObject where
-  toJSON = toJsonDrop 3
+  toJSON SendErrorObject{..} = object [ "error" .= e ]
+    where e = object [ "message"    .= eoMessage
+                     , "type"       .= eoType
+                     , "code"       .= eoCode
+                     , "error_data" .= eoErrorData
+                     , "fbtrace_id" .= eoFbtraceId ]
+  
 instance FromJSON SendErrorObject where
-  parseJSON = parseJsonDrop 3
+  parseJSON = withObject "send error" $ \o ->
+    let e = o .: "error"
+        e' field = e >>= (.: field)
+        -- code = decode (e' "code") :: Maybe SendErrorCode
+    in SendErrorObject <$>
+       e' "message"    <*>
+       e' "type"       <*>
+       e' "code"       <*>
+       e' "error_data" <*>
+       e' "fbtrace_id"  
+    
 
 -- | Send API Error Codes (see: https://developers.facebook.com/docs/messenger-platform/send-api-reference#errors)
 --
@@ -123,14 +134,14 @@ instance FromJSON SendErrorCode where
 -- | Take a Send API error object and return a tuple containing the error code and the error_data (seems to always be the description)
 errorInfo :: SendErrorObject -> (SendErrorCode, Text)
 errorInfo err = (ecode, edata) 
-  where edata = eo_error_data err
-        ecode = eo_code err
+  where edata = eoErrorData err
+        ecode = eoCode err
 
 -- | Extracts a Send API Error object from the ServantError (when possible).
 extractSendError :: ServantError -> Maybe SendErrorObject
 extractSendError FailureResponse{ responseStatus = _, responseContentType = _
                                 , responseBody = body 
                                 } = do
-                                  ewo <- decode body :: Maybe SendErrorWrapperObject
-                                  return $ ewo_error ewo
+                                  eo <- decode body :: Maybe SendErrorObject
+                                  return eo
 extractSendError _ = Nothing

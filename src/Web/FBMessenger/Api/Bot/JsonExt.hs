@@ -4,6 +4,8 @@
 {-# LANGUAGE TypeOperators     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+
 -- | This module contains helper functions to work with JSON
 --   Credits: https://github.com/klappvisor/haskell-telegram-api
 module Web.FBMessenger.API.Bot.JsonExt
