@@ -6,14 +6,15 @@
 -- | This module contains responses from Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Responses 
   ( -- * Types 
-    SendErrorCode          (..)
+    MessageResponse        (..)
+  , SendErrorCode          (..)
   , SendErrorObject        (..)
-  , MessageResponse        (..)
+  , SendErrorWrapperObject (..)
   , SubscriptionResponse   (..)
   , UserProfileResponse    (..)
   , WelcomeMessageResponse (..)
   -- * Functions
-  , sendErrorInfo
+  , errorInfo
   , extractSendError
   ) where
 
@@ -72,7 +73,8 @@ instance ToJSON WelcomeMessageResponse where
 instance FromJSON WelcomeMessageResponse where
   parseJSON = parseJsonDrop 4
 
-
+-- | This objects contains informations on eventual errors. 
+--   When using servant, you can use 'extractSendError' to extract useful informations from the ServantError error.
 data SendErrorWrapperObject = SendErrorWrapperObject { ewo_error :: SendErrorObject } deriving (Eq, Show, Generic)
 instance ToJSON SendErrorWrapperObject where
   toJSON = toJsonDrop 4
@@ -90,7 +92,7 @@ instance FromJSON SendErrorWrapperObject where
 --       "fbtrace_id":"D2kxCybrKVw"
 --    }
 --  
-data SendErrorObject = SendErrorObject { eo_message :: Text, eo_type :: Text, eo_code :: Int, eo_error_data :: Text, eo_fbtrace_id :: Text } deriving (Eq, Show, Generic)
+data SendErrorObject = SendErrorObject { eo_message :: Text, eo_type :: Text, eo_code :: SendErrorCode, eo_error_data :: Text, eo_fbtrace_id :: Text } deriving (Eq, Show, Generic)
 instance ToJSON SendErrorObject where
   toJSON = toJsonDrop 3
 instance FromJSON SendErrorObject where
@@ -104,18 +106,25 @@ instance FromJSON SendErrorObject where
 --   100   No matching user found
 --   613   Calls to this api have exceeded the rate limit.
 --
-data SendErrorCode = InternalServerError | UnauthorizedApplication | NoMatchingUserFound | RateLimitError | Other deriving (Eq, Show) 
+data SendErrorCode = InternalServerError | UnauthorizedApplication | NoMatchingUserFound | RateLimitError deriving (Eq, Show) 
+instance ToJSON SendErrorCode where
+  toJSON InternalServerError     = Number 2
+  toJSON UnauthorizedApplication = Number 10
+  toJSON NoMatchingUserFound     = Number 100
+  toJSON RateLimitError          = Number 613
+instance FromJSON SendErrorCode where
+  parseJSON (Number 2)   = pure InternalServerError
+  parseJSON (Number 10)  = pure UnauthorizedApplication
+  parseJSON (Number 100) = pure NoMatchingUserFound
+  parseJSON (Number 613) = pure RateLimitError
+  parseJSON _            = fail "Unable to parse SendErrorCode" 
+
 
 -- | Take a Send API error object and return a tuple containing the error code and the error_data (seems to always be the description)
-sendErrorInfo :: SendErrorObject -> (SendErrorCode, Text)
-sendErrorInfo err = (ecode, edata) 
+errorInfo :: SendErrorObject -> (SendErrorCode, Text)
+errorInfo err = (ecode, edata) 
   where edata = eo_error_data err
-        ecode = case eo_code err of
-                  2   -> InternalServerError
-                  10  -> UnauthorizedApplication
-                  100 -> NoMatchingUserFound
-                  613 -> RateLimitError
-                  _   -> Other
+        ecode = eo_code err
 
 -- | Extracts a Send API Error object from the ServantError (when possible).
 extractSendError :: ServantError -> Maybe SendErrorObject

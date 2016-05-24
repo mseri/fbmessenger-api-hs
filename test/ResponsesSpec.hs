@@ -48,16 +48,32 @@ run action name = unsafePerformIO $ do
 
 spec :: Spec
 spec = do
-    
     describe "response parsing" $ do
-        it "subscription response is parsed properly" $ do
-            run (\l -> (decode l) :: Maybe SubscriptionResponse) "subscriptionResponse.json"
+        it "subscription response is parsed properly" $
+            run (\l -> decode l :: Maybe SubscriptionResponse) "subscriptionResponse.json"
             `shouldBe`
             Just (SubscriptionResponse True)
         
-        it "welcome message response is parsed properly" $ do
-            run (\l -> (decode l) :: Maybe WelcomeMessageResponse) "welcomeMessageResponse.json"
+        it "welcome message response is parsed properly" $
+            run (\l -> decode l :: Maybe WelcomeMessageResponse) "welcomeMessageResponse.json"
             `shouldBe`
-            Just (WelcomeMessageResponse $ T.pack "Successfully added new_thread's CTAs")
-            
+            Just (WelcomeMessageResponse "Successfully added new_thread's CTAs")
+    describe "error response parsing" $ do
+        let ewo = run (\l -> decode l :: Maybe SendErrorWrapperObject) "errorResponse.json"
+        let eo  = SendErrorObject "Invalid parameter" "FacebookApiException" NoMatchingUserFound "No matching user found." "D2kxCybrKVw"
+        it "error response is parsed properly" $
+            ewo `shouldBe` Just (SendErrorWrapperObject eo)
+        
+        it "error response is extracted properly" $ 
+            errorInfo eo `shouldBe` (NoMatchingUserFound, "No matching user found.")
+    
         -- TODO: Error responses
+--         {
+--    "error":{
+--       "message":"Invalid parameter",
+--       "type":"FacebookApiException",
+--       "code":100,
+--       "error_data":"No matching user found.",
+--       "fbtrace_id":"D2kxCybrKVw"
+--    }
+-- }
