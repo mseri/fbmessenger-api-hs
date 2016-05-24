@@ -6,7 +6,6 @@
 module ResponsesSpec (spec) where
 
 import           Data.Aeson
-import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BSL
 import           System.FilePath
 import           System.IO.Unsafe

@@ -183,7 +183,7 @@ parseReceiptTemplate v = ReceiptTemplate <$> v .: "recipient_name"
                                          <*> v .: "elements"
                                          <*> v .:? "address"
                                          <*> v .: "summary"
-                                         <*> v .:? "asjustments" 
+                                         <*> v .:? "adjustments" 
 
 instance ToJSON ImagePayload where
     toJSON ImagePayload{..} = object [ "url" .= imgUrl ]
@@ -191,17 +191,18 @@ instance FromJSON ImagePayload where
     parseJSON = withObject "image payload" $ \v -> parseImagePayload v
     
 instance ToJSON GenericTemplate where
-    toJSON GenericTemplate{..} = object [ "elements" .= genElements ]
+    toJSON GenericTemplate{..} = object [ "template_type" .= ("generic"::String), "elements" .= genElements ]
 instance FromJSON GenericTemplate where
     parseJSON = withObject "generic template payload" $ \v -> parseGenericTemplate v
     
 instance ToJSON ButtonTemplate where
-    toJSON ButtonTemplate{..} = object [ "text" .= btnText, "buttons" .= btnButtons ]
+    toJSON ButtonTemplate{..} = object [ "template_type" .= ("button"::String), "text" .= btnText, "buttons" .= btnButtons ]
 instance FromJSON ButtonTemplate where
     parseJSON = withObject "button template payload" $ \v -> parseButtonTemplate v
     
 instance ToJSON ReceiptTemplate where
-    toJSON ReceiptTemplate{..} = omitNulls [ "recipient_name" .= rcpRecipientName
+    toJSON ReceiptTemplate{..} = omitNulls [ "template_type"  .= ("receipt"::String)
+                                           , "recipient_name" .= rcpRecipientName
                                            , "order_number"   .= rcpOrderNumber
                                            , "currency"       .= rcpCurrency
                                            , "payment_method" .= rcpPaymentMethod
@@ -210,7 +211,7 @@ instance ToJSON ReceiptTemplate where
                                            , "elements"       .= rcpElements
                                            , "address"        .= rcpAddress
                                            , "summary"        .= rcpSummary
-                                           , "asjustments"    .= rcpAdjustments ]
+                                           , "adjustments"    .= rcpAdjustments ]
 instance FromJSON ReceiptTemplate where
     parseJSON = withObject "receipt template payload" $ \v -> parseReceiptTemplate v
 
