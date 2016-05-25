@@ -63,7 +63,7 @@ spec = do
             Just rcpt `shouldBe` recipient (Just "USER_ID") Nothing
             
         it "text message is parsed properly" $
-            run (\l -> decode l :: Either String SendTextMessageRequest) "textMessage.json"
+            run (\l -> eitherDecode l :: Either String SendTextMessageRequest) "textMessage.json"
             `shouldBe` Right tm
         
         it "image message is parsed properly" $
@@ -80,7 +80,7 @@ spec = do
     
     describe "request serialization" $ do
         it "text message is serialized properly" $ 
-            (decode $ encode tm :: Maybe SendTextMessageRequest) 
+            (eitherDecode $ encode tm :: Either String SendTextMessageRequest) 
             `shouldBe` Right tm
         
         it "image message is serialized properly" $ 
