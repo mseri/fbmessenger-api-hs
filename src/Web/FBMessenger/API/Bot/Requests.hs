@@ -43,6 +43,8 @@ module Web.FBMessenger.API.Bot.Requests
     , setWelcomeTextMessageRequest
     , uploadImageMessageRequest
     , webUrlButton
+    -- we need this to export this for the WebHookRequests. Will be hidden in Bot
+    , AttachmentWrapper            (..)
 ) where
 
 import           Data.Aeson
@@ -55,7 +57,7 @@ import qualified Data.Text.Encoding as T
 import           GHC.Generics
 import           Network.HTTP.Client.MultipartFormData
 import           Network.Mime
-import           Prelude hiding (lookup)
+--import           Prelude hiding (lookup)
 import           Servant.Client.MultipartFormData (ToMultipartFormData (..))
 import           Web.FBMessenger.API.Bot.JsonExt
 
