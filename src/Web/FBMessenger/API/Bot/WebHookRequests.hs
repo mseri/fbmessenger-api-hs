@@ -6,17 +6,20 @@
 {-# LANGUAGE TypeOperators              #-}
 
 module Web.FBMessenger.API.Bot.WebhookRequests (
-    
+      WRRequest           (..)
+    , WREvent             (..)
+    , WRMessage           (..)
+    , WRMessageContent    (..) 
+    , WRMessageAttachment (..)
+    , WRAttachmentType    (..)
 ) where
     
 import           Control.Monad (when)
 import           Data.Aeson
-import           Data.Aeson.Types
+--import           Data.Aeson.Types
 import           Data.HashMap.Lazy (member)
-import           Data.Maybe (mapMaybe)
 import           Data.Text (Text)
 import           GHC.Generics
-import           Web.FBMessenger.API.Bot.Requests
 import           Web.FBMessenger.API.Bot.JsonExt
 
 -- TODO: add docstring, simplify api and representation
