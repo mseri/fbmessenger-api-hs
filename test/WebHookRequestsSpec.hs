@@ -10,7 +10,7 @@ import qualified Data.ByteString.Lazy as BSL
 import           System.FilePath
 import           System.IO.Unsafe
 import           Test.Hspec
-import           Web.FBMessenger.API.Bot.WebHookRequests
+import           Web.FBMessenger.API.Bot.WebhookRequests
 
 import           Paths_fbmessenger_api
 
@@ -20,42 +20,67 @@ run acBSLn name = unsafePerformIO $ do
     content <- BSL.readFile $ testFile name
     return $ acBSLn content
 
+-- TODOS: * try to modify api and get rid of WRRequest wrapper
+--        * add more tests for other cases, failures or corner cases
+
 spec :: Spec
 spec = do
-    let pageId = 111111
-    let entryTime = 12341
-    let authMessage = WRMessage "USER_ID" "PAGE_ID" 1234567890 (WRMAuth "PASS_THROUGH_PARAM")
-    let authEvent = WREvent pageId entryTime [authMessage]
+    let pid = 111111
+    let sid = "USER_ID"
+    let rid = "PAGE_ID"
+    
+    let authMessage = WRMessage sid rid (Just 1234567890) $ WRMAuth "PASS_THROUGH_PARAM"
+    let authEvent = WREvent pid 12341 [authMessage]
     let ar = WRRequest [authEvent]
+    
+    let deliveryMessage = WRMessage sid rid Nothing $ WRMDelivery 37 1458668856253 (Just ["mid.1458668856218:ed81099e15d3f4f233"])
+    let deliveryEvent = WREvent pid 1458668856451 [deliveryMessage]
+    let dr = WRRequest [deliveryEvent]
+    
+    let postbackMessage = WRMessage sid rid (Just 1458692752478) $ WRMPostback "USER_DEFINED_PAYLOAD"
+    let postbackEvent = WREvent pid 1458692752478 [postbackMessage]
+    let pr = WRRequest [postbackEvent]
+    
+    let textMessage = WRMessage sid rid (Just 1457764197627) $ WRMTextMessage "mid.1457764197618:41d102a3e1ae206a38" 73 "hello, world!"
+    let textEvent = WREvent pid 1457764198246 [textMessage]
+    let tr = WRRequest [textEvent]
+    
+    let structuredMessage = WRMessage sid rid (Just 1458696618268) $ WRMStructuredMessage "mid.1458696618141:b4ef9d19ec21086067" 51 [WRMessageAttachment ATImage "IMAGE_URL"]
+    let structuredMessageEvent = WREvent pid 1458696618911 [structuredMessage]
+    let sr = WRRequest [structuredMessageEvent]
     
     describe "webhook request parsing and generation" $ do              
          it "auth message is parsed properly" $
-             run (\l -> eitherDecode l :: Either String WRRequest) "wsAuthRequest.json" `shouldBe` Right ar
-        
---         it "generic template message is parsed properly" $
---             decodeSSm "genericTemplate.json" gm
-        
---         it "button template message is parsed properly" $
---             decodeSSm "buttonTemplate.json" bm
-        
---         it "receipt template message is parsed properly" $
---             decodeSSm "receiptTemplate.json" rm
+             decodeWR "wsAuthRequest.json" ar
+         
+         it "delivery message is parsed properly" $
+             decodeWR "wsDeliveryRequest.json" dr
+
+         it "postback message is parsed properly" $
+             decodeWR "wsPostbackRequest.json" pr
+
+         it "text message is parsed properly" $
+             decodeWR "wsTextMessageRequest.json" tr
+
+         it "structured message is parsed properly" $
+             decodeWR "wsStructuredMessageRequest.json" sr
     
     describe "webhook request serialization" $ do
          it "auth message is serialized properly" $ 
-             (eitherDecode $ encode ar :: Either String WRRequest) `shouldBe` Right ar
-        
---         it "generic template message is serialized properly" $
---             checkSSm gm
-        
---         it "button template message is serialized properly" $
---             checkSSm bm
-        
---         it "receipt template message is serialized properly" $
---             checkSSm rm
-     
---      where
---          decodeSSm fName m = run (\l -> eitherDecode l :: Either String SendStructuredMessageRequest) fName `shouldBe` Right m
---          checkSSm m = (eitherDecode $ encode m :: Either String SendStructuredMessageRequest) `shouldBe` Right m
+             checkWR ar
+         
+         it "delivery message is serialized properly" $
+             checkWR dr
 
--- -- TODO: Consider adding additional tests for corner cases and failures
+         it "postback message is serialized properly" $
+             checkWR pr
+             
+         it "text message is serialized properly" $
+             checkWR tr
+
+         it "structured message is serialized properly" $
+             checkWR sr
+     
+     where
+         decodeWR fName m = run (\l -> eitherDecode l :: Either String WRRequest) fName `shouldBe` Right m
+         checkWR m = (eitherDecode $ encode m :: Either String WRRequest) `shouldBe` Right m

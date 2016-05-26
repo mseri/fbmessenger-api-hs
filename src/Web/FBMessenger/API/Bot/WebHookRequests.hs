@@ -22,7 +22,7 @@ import           Data.Text (Text)
 import           GHC.Generics
 import           Web.FBMessenger.API.Bot.JsonExt
 
--- TODO: add docstring, simplify api and representation
+-- TODO: add docstring, simplify api and representation (get rid of WRRequest wrapper? Add useful getters?)
 -- Framp, this is for you :)
 
 data WRRequest = WRRequest{ wrrEntries :: [WREvent] } deriving (Show, Eq)
@@ -51,7 +51,7 @@ instance FromJSON WREvent where
 data WRMessage = WRMessage 
     { wrmSenderId    :: Text
     , wrmRecipientId :: Text
-    , wrmTimestamp   :: Int
+    , wrmTimestamp   :: Maybe Int
     , wrmContent     :: WRMessageContent
     } deriving (Show, Eq)
 
@@ -63,7 +63,7 @@ instance ToJSON WRMessage where
                         WRMAuth{}              -> "optin"
                         WRMDelivery{}          -> "delivery"
                         WRMPostback{}          -> "postback"
-        in object [ "sender"    .= object [ "id" .= wrmSenderId ]
+        in omitNulls [ "sender"    .= object [ "id" .= wrmSenderId ]
                   , "recipient" .= object [ "id" .= wrmRecipientId ] 
                   , "timestamp" .= wrmTimestamp
                   , content     .= wrmContent ]
@@ -72,7 +72,7 @@ instance FromJSON WRMessage where
     parseJSON = withObject "WebSocket message content" $ \o -> do
                   wrmSenderId    <- o .: "sender" >>= (.: "id")
                   wrmRecipientId <- o .: "recipient" >>= (.: "id")
-                  wrmTimestamp   <- o .: "timestamp"
+                  wrmTimestamp   <- o .:? "timestamp"
                   -- not too clean but seems to do the job
                   -- if we refactor, it's faster if we get the first true only
                   let wrmTypeChoices = filter (`member` o) (["message", "optin", "delivery", "postback"]::[Text])
