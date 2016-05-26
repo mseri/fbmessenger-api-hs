@@ -43,8 +43,6 @@ module Web.FBMessenger.API.Bot.Requests
     , setWelcomeTextMessageRequest
     , uploadImageMessageRequest
     , webUrlButton
-    -- we need this to export this for the WebHookRequests. Will be hidden in Bot
-    , AttachmentWrapper            (..)
 ) where
 
 import           Data.Aeson

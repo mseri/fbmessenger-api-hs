@@ -8,7 +8,7 @@
 module Web.FBMessenger.API.Bot.WebhookRequests (
     
 ) where
-    -- Framp, this is for you :)
+    
 import           Control.Monad (when)
 import           Data.Aeson
 import           Data.Aeson.Types
@@ -19,8 +19,10 @@ import           GHC.Generics
 import           Web.FBMessenger.API.Bot.Requests
 import           Web.FBMessenger.API.Bot.JsonExt
 
+-- TODO: add docstring, simplify api and representation
+-- Framp, this is for you :)
 
-data WRRequest = WRRequest{ wrrEntries :: [WREvent] } deriving Show
+data WRRequest = WRRequest{ wrrEntries :: [WREvent] } deriving (Show, Eq)
 instance ToJSON WRRequest where 
     toJSON WRRequest{..} = object [ "object" .= ("page"::String), "entry" .= wrrEntries ]
 instance FromJSON WRRequest where
@@ -35,7 +37,7 @@ data WREvent = WREvent
     { page_id        :: Int           -- ^ Page ID of page 
     , page_time      :: Int           -- ^ Time of update
     , page_messaging :: [WRMessage]   -- ^ Array containing objects related to messaging
-    } deriving (Show, Generic)
+    } deriving (Show, Eq, Generic)
 
 instance ToJSON WREvent where
     toJSON = toJsonDrop 5
@@ -48,16 +50,16 @@ data WRMessage = WRMessage
     , wrmRecipientId :: Text
     , wrmTimestamp   :: Int
     , wrmContent     :: WRMessageContent
-    } deriving Show
+    } deriving (Show, Eq)
 
 instance ToJSON WRMessage where 
     toJSON WRMessage{..} = 
         let content = case wrmContent of 
-                        WRMTextMessage       -> "message"
-                        WRMStructuredMessage -> "message"
-                        WRMAuth              -> "optin"
-                        WRMDelivery          -> "delivery"
-                        WRMPostback          -> "postback"
+                        WRMTextMessage{}       -> "message"
+                        WRMStructuredMessage{} -> "message"
+                        WRMAuth{}              -> "optin"
+                        WRMDelivery{}          -> "delivery"
+                        WRMPostback{}          -> "postback"
         in object [ "sender"    .= object [ "id" .= wrmSenderId ]
                   , "recipient" .= object [ "id" .= wrmRecipientId ] 
                   , "timestamp" .= wrmTimestamp
@@ -74,16 +76,68 @@ instance FromJSON WRMessage where
                   when (null wrmTypeChoices) $ 
                     fail "unknown message content"
                   -- here I am assuming only one kind of content per request
-                  let wrmContent = case head wrmTypeChoices of
-                                      "message"  -> WRMTextMessage -- we will have to check if "attachment" is present and discern the messages
-                                      "optin"    -> WRMAuth
-                                      "delivery" -> WRMDelivery
-                                      "postback" -> WRMPostback
-                                      _          -> error "this cannot happen by construction, but I want to make the compiler happy"
+                  -- wrmContent <- case head wrmTypeChoices of
+                  --                     "message"  -> (o .: "message")
+                  --                     "optin"    -> (o .: "optin")
+                  --                     "delivery" -> (o .: "delivery")
+                  --                     "postback" -> (o .: "postback")
+                  --                     _          -> error "this cannot happen by construction, but I want to make the compiler happy"
+                  wrmContent <- o .: head wrmTypeChoices 
                   return WRMessage{..}
 
--- TODO: properly define the message content and its serialization/deserialization
+data WRMessageContent = WRMTextMessage Text Int Text       -- ^ Message ID; Message sequence number; Message text. 
+                      | WRMStructuredMessage Text Int [WRMessageAttachment] -- ^ Message ID; Message sequence number; Array containing attachment data (image, video, audio)
+                      | WRMAuth Text                       -- ^ data-ref parameter that was defined with the entry point
+                      | WRMDelivery Int Int (Maybe [Text]) -- ^ Sequence No.; Watermark: all messages that were sent before this timestamp were delivered; Array containing message IDs of messages that were delivered (optional) 
+                      | WRMPostback Text                   -- ^ Contains the postback payload that was defined with the button
+                      deriving (Show, Eq)
+instance ToJSON WRMessageContent where
+    toJSON (WRMTextMessage mid seq text) = object [ "mid" .= mid, "seq" .= seq, "text" .= text ] 
+    toJSON (WRMStructuredMessage mid seq attachments) = object [ "mid" .= mid, "seq" .= seq, "attachments" .= attachments ]
+    toJSON (WRMAuth ref) = object [ "ref" .= ref ]
+    toJSON (WRMDelivery seq watermark mids) = omitNulls [ "seq" .= seq, "watermark" .= watermark, "mids" .= mids ]
+    toJSON (WRMPostback payload) = object [ "payload" .= payload ]
+    
+instance FromJSON WRMessageContent where
+    parseJSON = withObject "message content" $ \o -> do
+        let typeChoices = filter (`member` o) (["text", "attachments", "ref", "watermark", "payload"]::[Text])
+        when (null typeChoices) $ 
+            fail "unknown message content"
+        case head typeChoices of
+            "text"        -> WRMTextMessage <$> o .: "mid" <*> o .: "seq" <*> o .: "text"
+            "attachments" -> WRMStructuredMessage <$> o .: "mid"  <*> o .: "seq" <*> o .: "attachments"
+            "ref"         -> WRMAuth <$> o .: "ref"
+            "watermark"   -> WRMDelivery <$> o .: "seq" <*> o .: "watermark" <*> o .:? "mids"
+            "payload"     -> WRMPostback <$> o .: "payload"
+            _             -> error "this cannot happen by construction, but I want to make the compiler happy"
 
-data WRMessageContent = WRMTextMessage | WRMStructuredMessage | WRMAuth | WRMDelivery | WRMPostback deriving (Show, Generic)
-instance ToJSON WRMessageContent
-instance FromJSON WRMessageContent
+
+data WRMessageAttachment = WRMessageAttachment { wrmaType :: WRAttachmentType, wrmaUrl :: Text } deriving (Show, Eq)
+instance ToJSON WRMessageAttachment where
+    toJSON WRMessageAttachment{..} = object [ "type" .= wrmaType, "payload" .= object [ "url" .= wrmaUrl ] ]
+instance FromJSON WRMessageAttachment where
+    parseJSON = withObject "websocket call message attachment" $ \o -> do
+        wrmaType <- o .: "type"
+        wrmaUrl  <- o .: "payload" >>= (.: "url")
+        return WRMessageAttachment{..} 
+    
+data WRAttachmentType = ATImage | ATVideo | ATAudio deriving (Show, Eq)
+instance ToJSON WRAttachmentType where
+    toJSON ATImage = "image"
+    toJSON ATVideo = "video"
+    toJSON ATAudio = "audio" 
+instance FromJSON WRAttachmentType where
+    parseJSON "image" = pure ATImage
+    parseJSON "video" = pure ATVideo
+    parseJSON "audio" = pure ATAudio
+    parseJSON _       = fail "impossible to parse AttachmentType"
+    
+
+
+-- Helpers
+
+-- from http://bitemyapp.com/posts/2014-07-31-aeson-with-uncertainty-revised.html
+omitNulls :: [(Text, Value)] -> Value
+omitNulls = object . filter notNull where
+  notNull (_, Null) = False
+  notNull _         = True
