@@ -6,133 +6,129 @@
 {-# LANGUAGE TypeOperators              #-}
 
 module Web.FBMessenger.API.Bot.WebhookRequests (
-      WRRequest           (..)
-    , WREvent             (..)
-    , WRMessage           (..)
-    , WRMessageContent    (..) 
-    , WRMessageAttachment (..)
-    , WRAttachmentType    (..)
+      RemoteEvent                      (..)
+    , RemoteEventList                  (..)
+    , EventMessage                     (..)
+    , EventMessageContent              (..) 
+    , EventMessageAttachment           (..)
+    , EventMessageAttachmentType       (..)
 ) where
     
 import           Control.Monad (when)
 import           Data.Aeson
---import           Data.Aeson.Types
 import           Data.HashMap.Lazy (member)
 import           Data.Text (Text)
 import           GHC.Generics
 import           Web.FBMessenger.API.Bot.JsonExt
 
--- TODO: add docstring, simplify api and representation (get rid of WRRequest wrapper? Add useful getters?)
--- Framp, this is for you :)
+-- TODOS: * add docstrings
+--        * try to cleanup and simplify the API and the data representation 
+--        * consider adding useful getters
 
-data WRRequest = WRRequest{ wrrEntries :: [WREvent] } deriving (Show, Eq)
-instance ToJSON WRRequest where 
-    toJSON WRRequest{..} = object [ "object" .= ("page"::String), "entry" .= wrrEntries ]
-instance FromJSON WRRequest where
-    parseJSON = withObject "WebSocket request" $ \o -> do
+data RemoteEventList = RemoteEventList [RemoteEvent] deriving (Eq, Show)
+instance ToJSON RemoteEventList where
+    toJSON (RemoteEventList evts) = object [ "object" .= ("page"::String), "entry" .= evts ]
+instance FromJSON RemoteEventList where
+    parseJSON = withObject "webhook request" $ \o -> do
                   obj <- o .: "object"
                   when (obj /= ("page"::String)) $ 
                     fail "invalid messaging event request"
-                  wrrEntries <- o .: "entry"
-                  return WRRequest{..}
+                  evts <- o .: "entry"
+                  return (RemoteEventList evts)
 
-data WREvent = WREvent 
-    { page_id        :: Int           -- ^ Page ID of page 
-    , page_time      :: Int           -- ^ Time of update
-    , page_messaging :: [WRMessage]   -- ^ Array containing objects related to messaging
+
+data RemoteEvent = RemoteEvent
+    { evt_id        :: Int              -- ^ Page ID of page 
+    , evt_time      :: Int              -- ^ Time of update
+    , evt_messaging :: [EventMessage]   -- ^ Array containing objects related to messaging
     } deriving (Show, Eq, Generic)
 
-instance ToJSON WREvent where
-    toJSON = toJsonDrop 5
-instance FromJSON WREvent where
-    parseJSON = parseJsonDrop 5
+instance ToJSON RemoteEvent where
+    toJSON = toJsonDrop 4
+instance FromJSON RemoteEvent where
+    parseJSON = parseJsonDrop 4
 
 
-data WRMessage = WRMessage 
-    { wrmSenderId    :: Text
-    , wrmRecipientId :: Text
-    , wrmTimestamp   :: Maybe Int
-    , wrmContent     :: WRMessageContent
+data EventMessage = EventMessage 
+    { evtSenderId    :: Text
+    , evtRecipientId :: Text
+    , evtTimestamp   :: Maybe Int
+    , evtContent     :: EventMessageContent
     } deriving (Show, Eq)
 
-instance ToJSON WRMessage where 
-    toJSON WRMessage{..} = 
-        let content = case wrmContent of 
-                        WRMTextMessage{}       -> "message"
-                        WRMStructuredMessage{} -> "message"
-                        WRMAuth{}              -> "optin"
-                        WRMDelivery{}          -> "delivery"
-                        WRMPostback{}          -> "postback"
-        in omitNulls [ "sender"    .= object [ "id" .= wrmSenderId ]
-                  , "recipient" .= object [ "id" .= wrmRecipientId ] 
-                  , "timestamp" .= wrmTimestamp
-                  , content     .= wrmContent ]
+instance ToJSON EventMessage where 
+    toJSON EventMessage{..} = 
+        let content = case evtContent of 
+                        EmTextMessage{}       -> "message"
+                        EmStructuredMessage{} -> "message"
+                        EmAuth{}              -> "optin"
+                        EmDelivery{}          -> "delivery"
+                        EmPostback{}          -> "postback"
+        in omitNulls [ "sender"    .= object [ "id" .= evtSenderId ]
+                     , "recipient" .= object [ "id" .= evtRecipientId ] 
+                     , "timestamp" .= evtTimestamp
+                     , content     .= evtContent ]
                             
-instance FromJSON WRMessage where
+instance FromJSON EventMessage where
     parseJSON = withObject "WebSocket message content" $ \o -> do
-                  wrmSenderId    <- o .: "sender" >>= (.: "id")
-                  wrmRecipientId <- o .: "recipient" >>= (.: "id")
-                  wrmTimestamp   <- o .:? "timestamp"
+                  evtSenderId    <- o .: "sender" >>= (.: "id")
+                  evtRecipientId <- o .: "recipient" >>= (.: "id")
+                  evtTimestamp   <- o .:? "timestamp"
                   -- not too clean but seems to do the job
                   -- if we refactor, it's faster if we get the first true only
-                  let wrmTypeChoices = filter (`member` o) (["message", "optin", "delivery", "postback"]::[Text])
-                  when (null wrmTypeChoices) $ 
+                  let evtChoices = filter (`member` o) (["message", "optin", "delivery", "postback"]::[Text])
+                  when (null evtChoices) $ 
                     fail "unknown message content"
-                  -- here I am assuming only one kind of content per request
-                  -- wrmContent <- case head wrmTypeChoices of
-                  --                     "message"  -> (o .: "message")
-                  --                     "optin"    -> (o .: "optin")
-                  --                     "delivery" -> (o .: "delivery")
-                  --                     "postback" -> (o .: "postback")
-                  --                     _          -> error "this cannot happen by construction, but I want to make the compiler happy"
-                  wrmContent <- o .: head wrmTypeChoices 
-                  return WRMessage{..}
+                  -- WARN: here I am assuming only one kind of content per request
+                  evtContent <- o .: head evtChoices 
+                  return EventMessage{..}
 
-data WRMessageContent = WRMTextMessage Text Int Text       -- ^ Message ID; Message sequence number; Message text. 
-                      | WRMStructuredMessage Text Int [WRMessageAttachment] -- ^ Message ID; Message sequence number; Array containing attachment data (image, video, audio)
-                      | WRMAuth Text                       -- ^ data-ref parameter that was defined with the entry point
-                      | WRMDelivery Int Int (Maybe [Text]) -- ^ Sequence No.; Watermark: all messages that were sent before this timestamp were delivered; Array containing message IDs of messages that were delivered (optional) 
-                      | WRMPostback Text                   -- ^ Contains the postback payload that was defined with the button
-                      deriving (Show, Eq)
-instance ToJSON WRMessageContent where
-    toJSON (WRMTextMessage mid seq text) = object [ "mid" .= mid, "seq" .= seq, "text" .= text ] 
-    toJSON (WRMStructuredMessage mid seq attachments) = object [ "mid" .= mid, "seq" .= seq, "attachments" .= attachments ]
-    toJSON (WRMAuth ref) = object [ "ref" .= ref ]
-    toJSON (WRMDelivery seq watermark mids) = omitNulls [ "seq" .= seq, "watermark" .= watermark, "mids" .= mids ]
-    toJSON (WRMPostback payload) = object [ "payload" .= payload ]
+
+data EventMessageContent = EmTextMessage Text Int Text       -- ^ Message ID; Message sequence number; Message text. 
+                         | EmStructuredMessage Text Int [EventMessageAttachment] -- ^ Message ID; Message sequence number; Array containing attachment data (image, video, audio)
+                         | EmAuth Text                       -- ^ data-ref parameter that was defined with the entry point
+                         | EmDelivery Int Int (Maybe [Text]) -- ^ Sequence No.; Watermark: all messages that were sent before this timestamp were delivered; Array containing message IDs of messages that were delivered (optional) 
+                         | EmPostback Text                   -- ^ Contains the postback payload that was defined with the button
+                         deriving (Show, Eq)
+instance ToJSON EventMessageContent where
+    toJSON (EmTextMessage mid seq text) = object [ "mid" .= mid, "seq" .= seq, "text" .= text ] 
+    toJSON (EmStructuredMessage mid seq attachments) = object [ "mid" .= mid, "seq" .= seq, "attachments" .= attachments ]
+    toJSON (EmAuth ref) = object [ "ref" .= ref ]
+    toJSON (EmDelivery seq watermark mids) = omitNulls [ "seq" .= seq, "watermark" .= watermark, "mids" .= mids ]
+    toJSON (EmPostback payload) = object [ "payload" .= payload ]
     
-instance FromJSON WRMessageContent where
+instance FromJSON EventMessageContent where
     parseJSON = withObject "message content" $ \o -> do
-        let typeChoices = filter (`member` o) (["text", "attachments", "ref", "watermark", "payload"]::[Text])
-        when (null typeChoices) $ 
+        let ctChoices = filter (`member` o) (["text", "attachments", "ref", "watermark", "payload"]::[Text])
+        when (null ctChoices) $ 
             fail "unknown message content"
-        case head typeChoices of
-            "text"        -> WRMTextMessage <$> o .: "mid" <*> o .: "seq" <*> o .: "text"
-            "attachments" -> WRMStructuredMessage <$> o .: "mid"  <*> o .: "seq" <*> o .: "attachments"
-            "ref"         -> WRMAuth <$> o .: "ref"
-            "watermark"   -> WRMDelivery <$> o .: "seq" <*> o .: "watermark" <*> o .:? "mids"
-            "payload"     -> WRMPostback <$> o .: "payload"
+        case head ctChoices of
+            "text"        -> EmTextMessage <$> o .: "mid" <*> o .: "seq" <*> o .: "text"
+            "attachments" -> EmStructuredMessage <$> o .: "mid"  <*> o .: "seq" <*> o .: "attachments"
+            "ref"         -> EmAuth <$> o .: "ref"
+            "watermark"   -> EmDelivery <$> o .: "seq" <*> o .: "watermark" <*> o .:? "mids"
+            "payload"     -> EmPostback <$> o .: "payload"
             _             -> error "this cannot happen by construction, but I want to make the compiler happy"
 
 
-data WRMessageAttachment = WRMessageAttachment { wrmaType :: WRAttachmentType, wrmaUrl :: Text } deriving (Show, Eq)
-instance ToJSON WRMessageAttachment where
-    toJSON WRMessageAttachment{..} = object [ "type" .= wrmaType, "payload" .= object [ "url" .= wrmaUrl ] ]
-instance FromJSON WRMessageAttachment where
+data EventMessageAttachment = EmAttachment { emType :: EventMessageAttachmentType, emUrl :: Text } deriving (Show, Eq)
+instance ToJSON EventMessageAttachment where
+    toJSON EmAttachment{..} = object [ "type" .= emType, "payload" .= object [ "url" .= emUrl ] ]
+instance FromJSON EventMessageAttachment where
     parseJSON = withObject "websocket call message attachment" $ \o -> do
-        wrmaType <- o .: "type"
-        wrmaUrl  <- o .: "payload" >>= (.: "url")
-        return WRMessageAttachment{..} 
+        emType <- o .: "type"
+        emUrl  <- o .: "payload" >>= (.: "url")
+        return EmAttachment{..} 
     
-data WRAttachmentType = ATImage | ATVideo | ATAudio deriving (Show, Eq)
-instance ToJSON WRAttachmentType where
-    toJSON ATImage = "image"
-    toJSON ATVideo = "video"
-    toJSON ATAudio = "audio" 
-instance FromJSON WRAttachmentType where
-    parseJSON "image" = pure ATImage
-    parseJSON "video" = pure ATVideo
-    parseJSON "audio" = pure ATAudio
+data EventMessageAttachmentType = EmImage | EmVideo | EmAudio deriving (Show, Eq)
+instance ToJSON EventMessageAttachmentType where
+    toJSON EmImage = "image"
+    toJSON EmVideo = "video"
+    toJSON EmAudio = "audio" 
+instance FromJSON EventMessageAttachmentType where
+    parseJSON "image" = pure EmImage
+    parseJSON "video" = pure EmVideo
+    parseJSON "audio" = pure EmAudio
     parseJSON _       = fail "impossible to parse AttachmentType"
     
 
