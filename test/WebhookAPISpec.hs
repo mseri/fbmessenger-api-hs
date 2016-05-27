@@ -3,14 +3,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module WebhookRequestsSpec (spec) where
+module WebhookAPISpec (spec) where
 
 import           Data.Aeson
 import qualified Data.ByteString.Lazy as BSL
 import           System.FilePath
 import           System.IO.Unsafe
 import           Test.Hspec
-import           Web.FBMessenger.API.Bot.WebhookRequests
+import           Web.FBMessenger.API.Bot.WebhookAPI
 
 import           Paths_fbmessenger_api
 

@@ -5,7 +5,7 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TypeOperators              #-}
 
-module Web.FBMessenger.API.Bot.WebhookRequests (
+module Web.FBMessenger.API.Bot.WebhookAPI (
       RemoteEvent                      (..)
     , RemoteEventList                  (..)
     , EventMessage                     (..)

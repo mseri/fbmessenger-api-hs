@@ -11,4 +11,4 @@ module Web.FBMessenger.API.Bot ( module X ) where
 import Web.FBMessenger.API.Bot.SendAPI as X
 import Web.FBMessenger.API.Bot.Responses as X
 import Web.FBMessenger.API.Bot.Requests as X
-import Web.FBMessenger.API.Bot.WebhookRequests as X
+import Web.FBMessenger.API.Bot.WebhookAPI as X
