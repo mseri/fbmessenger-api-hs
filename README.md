@@ -51,5 +51,5 @@ To run tests
 # TODO
 
 - Tests for the network part of the api
-- Webhooks API Requests Body types (NOTE: the body for these will be an array of an appropriate sum type... annoying)
+- Cleanup Webhooks API Requests
 - Set up Travis, CircleCI or whatever is supported by bitbucket for testing
