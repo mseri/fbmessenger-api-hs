@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module WebHookRequestsSpec (spec) where
+module WebhookRequestsSpec (spec) where
 
 import           Data.Aeson
 import qualified Data.ByteString.Lazy as BSL
