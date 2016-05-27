@@ -21,7 +21,7 @@ library
                      , Web.FBMessenger.API.Bot.SendAPI
                      , Web.FBMessenger.API.Bot.Responses
                      , Web.FBMessenger.API.Bot.Requests
-                     , Web.FBMessenger.API.Bot.WebhookRequests
+                     , Web.FBMessenger.API.Bot.WebhookAPI
   other-modules:       Web.FBMessenger.API.Bot.JsonExt
                      , Servant.Client.MultipartFormData
   build-depends:       base >= 4.7 && < 5
