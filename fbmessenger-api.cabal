@@ -1,8 +1,8 @@
 name:                fbmessenger-api
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            High-level bindings to Facebook Messenger Platform API
 description:         Please see README.md
-homepage:            https://github.com/mseri/fbmessenger-api#readme
+homepage:            https://github.com/mseri/fbmessenger-api-hs#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Marcello Seri
@@ -78,4 +78,4 @@ test-suite fbmessenger-api-test
 
 source-repository head
   type:     git
-  location: https://bitbucket.org/bad4ss/haskell-fb-messenger-api.git
+  location: https://github.com/mseri/fbmessenger-api-hs
