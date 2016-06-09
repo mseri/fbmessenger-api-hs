@@ -1,10 +1,3 @@
-{-# LANGUAGE DataKinds         #-}
---{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE DeriveAnyClass    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
---{-# LANGUAGE TemplateHaskell   #-}
-
 -- | This module provides the Messenger Platform Bot API
 module Web.FBMessenger.API.Bot ( module X ) where
 
