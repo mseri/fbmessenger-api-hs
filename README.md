@@ -3,6 +3,8 @@
 High-level bindings to the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform/) based on [servant](https://haskell-servant.github.io/) library.
 We try to maintain the overall structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
 
+This library is alpha software and the api could change to improve composability, ergonomicity and ease of use. We recommend using stack for dealing with this library.
+
 Useful links: 
 - [servant tutorial](http://haskell-servant.readthedocs.io/en/stable/tutorial)
 - [simple python bindings for the messenger api](https://github.com/geeknam/messengerbot)
@@ -13,7 +15,7 @@ Useful links:
 # Usage
 
 Before being able to test and use the bot, you will need to verify your key. 
-The example app in `example-app/example.hs` contains a servant server that implements the verification.
+The example app in `example-app/example.hs` contains a servant server that implements the verification and a trivial echo-server.
 You can run it with
 
      VERIFY_TOKEN="your_token_goes_here" stack exec example  
@@ -50,6 +52,7 @@ To run tests
 
 # TODO
 
-- Tests for the network part of the api
-- Cleanup Webhooks API Requests
+- Test the new example server
+- Tests for the network part of the api (hard, requires a bot setted up and permanently running)
+- Cleanup Webhooks API Requests and add higher level helpers
 - Set up Travis, CircleCI or whatever is supported by bitbucket for testing

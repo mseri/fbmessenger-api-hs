@@ -23,7 +23,7 @@ import           Web.FBMessenger.API.Bot.JsonExt
 
 -- TODOS: * add docstrings
 --        * try to cleanup and simplify the API and the data representation 
---        * consider adding useful getters
+--        * consider adding useful getters and a mapper from [RemoteEvents] -> [EventMessage]
 
 data RemoteEventList = RemoteEventList [RemoteEvent] deriving (Eq, Show)
 instance ToJSON RemoteEventList where
@@ -50,8 +50,8 @@ instance FromJSON RemoteEvent where
 
 
 data EventMessage = EventMessage 
-    { evtSenderId    :: Text
-    , evtRecipientId :: Text
+    { evtSenderId    :: Text            -- ^ Sender user ID
+    , evtRecipientId :: Text            -- ^ Recipient user ID
     , evtTimestamp   :: Maybe Int
     , evtContent     :: EventMessageContent
     } deriving (Show, Eq)
