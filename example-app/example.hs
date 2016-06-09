@@ -7,26 +7,56 @@ import Control.Monad (when)
 import Control.Monad.Trans.Except (ExceptT)
 import Data.Maybe (fromMaybe)
 import Data.Proxy
+import Data.Text as T hiding (map)
+import Network.HTTP.Client hiding (Proxy, port)
+import Network.HTTP.Client.TLS
 import Network.Wai.Handler.Warp
 import Servant
 import System.Environment
 import System.IO
+import Web.FBMessenger.API.Bot
 
 type WebHookAPI = "webhook" :> 
-  QueryParam "hub.verify_token" String :> 
-  QueryParam "hub.challenge" String :> 
-  Get '[PlainText] String
+    QueryParam "hub.verify_token" String :> 
+    QueryParam "hub.challenge" String :> 
+    Get '[PlainText] String
+  :<|> "webhook" :>
+    ReqBody '[JSON] RemoteEventList :>
+    Post '[PlainText] String
 
 webHookAPI :: Proxy WebHookAPI
 webHookAPI = Proxy
 
 server :: String -> Server WebHookAPI
-server verifyTokenStored = webhook
+server verifyTokenStored = 
+  webhook_verify
+  :<|> webhook_message
   where
-    webhook :: Maybe String -> Maybe String -> ExceptT ServantErr IO String
-    webhook (Just verifyToken) (Just challenge) 
+    webhook_verify :: Maybe String -> Maybe String -> ExceptT ServantErr IO String
+    webhook_verify (Just verifyToken) (Just challenge) 
       | verifyToken == verifyTokenStored = return challenge
-    webhook _ _ = throwError err500 { errBody = "Error, wrong validation token"}
+    webhook_verify _ _ = throwError err500 { errBody = "Error, wrong validation token"}
+
+    webhook_message :: RemoteEventList -> ExceptT ServantErr IO String
+    webhook_message (RemoteEventList res) = do
+      let _ = map (echoMessage . evt_messaging) res
+      return "ok"
+
+    echoMessage :: [EventMessage] -> IO ()
+    echoMessage msgs = mapM_ process msgs >> return ()
+      where 
+        process msg = case evtContent msg of
+            EmTextMessage _ _ text -> do
+              case recipient (Just $ evtSenderId msg) Nothing of
+                Nothing -> return ()
+                Just r -> do
+                  let req = sendTextMessageRequest Nothing r text
+                  m <- newManager tlsManagerSettings
+                  let t = Token $ T.pack verifyTokenStored
+                  let _ = sendTextMessage (Just $ t) req m
+                  return ()
+            _ -> return ()
+
 
 main :: IO ()
 main = do
