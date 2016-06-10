@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Monad (when)
+import Control.Monad (when, void)
 import Control.Monad.Trans.Except (ExceptT)
 import Data.Maybe (fromMaybe)
 import Data.Proxy
@@ -43,20 +43,26 @@ server verifyTokenStored =
       return "ok"
 
     echoMessage :: [EventMessage] -> IO ()
-    echoMessage msgs = mapM_ process msgs >> return ()
-      where 
-        process msg = case evtContent msg of
-            EmTextMessage _ _ text -> do
-              case recipient (Just $ evtSenderId msg) Nothing of
-                Nothing -> return ()
-                Just r -> do
-                  let req = sendTextMessageRequest Nothing r text
-                  m <- newManager tlsManagerSettings
-                  let t = Token $ T.pack verifyTokenStored
-                  let _ = sendTextMessage (Just $ t) req m
-                  return ()
-            _ -> return ()
+    echoMessage msgs = void (mapM_ process msgs)
+      where
+        token = Token $ T.pack verifyTokenStored
 
+        process msg = 
+          case evtContent msg of
+            EmTextMessage _ _ text -> echoTextMessage text (evtSenderId msg)
+            _                      -> void (putStrLn "LOG: this is just an example, no complex message is echoed.")
+
+        echoTextMessage text rcptId = do 
+          m <- newManager tlsManagerSettings
+          -- create the recipient using the sender id
+          -- (we know that this is successful when only one argument is not Nothing) 
+          let (Just rcpt) = recipient (Just rcptId) Nothing
+          -- prepare the Send API request body 
+          let messageReq = sendTextMessageRequest Nothing rcpt text
+          putStrLn ("LOG: sending " ++ T.unpack text ++ " to " ++ show rcpt)
+          -- finally send the message request using the tls http connection manager  
+          void $ sendTextMessage (Just token) messageReq m
+    
 
 main :: IO ()
 main = do
