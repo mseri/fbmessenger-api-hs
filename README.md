@@ -17,8 +17,8 @@ Useful links:
 Before being able to test and use the bot, you will need to verify your key. 
 The example app in `example-app/example.hs` contains a servant server that implements the verification and a trivial echo-server.
 You can run it with
-
-     VERIFY_TOKEN="your_token_goes_here" stack exec example  
+    
+    VERIFY_TOKEN="your_token_goes_here" stack exec example  
 
 Run `stack ghci` then copy and paste the following
 
