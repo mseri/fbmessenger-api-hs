@@ -50,6 +50,7 @@ executable example
   ghc-options:        -fwarn-tabs -O2 -Wall -threaded
   build-depends:      base
                     ,  aeson
+                    ,  bytestring
                     ,  http-client
                     ,  http-client-tls
                     ,  fbmessenger-api
