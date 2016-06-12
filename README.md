@@ -52,7 +52,5 @@ To run tests
 
 # TODO
 
-- Test the new example server
 - Tests for the network part of the api (hard, requires a bot setted up and permanently running)
 - Cleanup Webhooks API Requests and add higher level helpers
-- Set up Travis, CircleCI or whatever is supported by bitbucket for testing
