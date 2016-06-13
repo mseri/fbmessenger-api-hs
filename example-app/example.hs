@@ -3,7 +3,8 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Monad (when)
+import Control.Concurrent (forkIO, threadDelay)
+import Control.Monad (when, forever)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except (ExceptT)
 import qualified Data.ByteString.Lazy.Char8 as C
@@ -37,8 +38,8 @@ webHookAPI = Proxy
 
 -- TODO: use monad-logger to implement proper logging
 
-server :: String -> Server WebHookAPI
-server verifyTokenStored = 
+server :: String -> String -> Server WebHookAPI
+server verifyTokenStored pageTokenStored = 
   webhook_verify
   :<|> webhook_message
   where
@@ -58,7 +59,7 @@ server verifyTokenStored =
       liftIO $ traverse_ (putStrLn . T.unpack) r
       return "{\"status\":\"fulfilled\"}"
 
-    token = Token $ T.pack verifyTokenStored
+    token = Token $ T.pack pageTokenStored
 
     echoMessage :: EventMessage -> ExceptT ServantErr IO T.Text
     echoMessage msg = do
@@ -82,19 +83,25 @@ server verifyTokenStored =
                           logRsp
       return (T.pack logMsg)
 
-app :: String -> Application
-app = serve webHookAPI . server
+app :: String -> String -> Application
+app verifyToken pageToke = serve webHookAPI $ server verifyToken pageToken 
 
 main :: IO ()
 main = do
     hSetBuffering stdout LineBuffering
     env <- getEnvironment
+
     let port = maybe 3000 read $ lookup "PORT" env
+
     let verifyToken = fromMaybe "" $ lookup "VERIFY_TOKEN" env
     when (verifyToken == "") $ do
-      putStrLn "[WARN]: Please set VERIFY_TOKEN to a safe string"
+      putStrLn "[WARN]: please set VERIFY_TOKEN to a safe string"
       exitFailure
-    putStrLn $ printf "[INFO]: Server listening on port %i" port
+
+    let pageToken = fromMaybe "" $ lookup "PAGE_TOKEN" env
+    when (pageToken == "") $ putStrLn "[WARN]: make sure to set up the correct page token"
+
+    putStrLn $ printf "[INFO]: server listening on port %i" port
     withStdoutLogger $ \aplogger -> do
       let settings = setPort port $ setLogger aplogger defaultSettings
-      runSettings settings (app verifyToken)
+      runSettings settings (app verifyToken pageToken)

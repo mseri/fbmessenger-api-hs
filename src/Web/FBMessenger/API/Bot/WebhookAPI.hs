@@ -6,12 +6,15 @@
 {-# LANGUAGE TypeOperators              #-}
 
 module Web.FBMessenger.API.Bot.WebhookAPI (
+    -- * Types
       RemoteEvent                      (..)
     , RemoteEventList                  (..)
     , EventMessage                     (..)
     , EventMessageContent              (..) 
     , EventMessageAttachment           (..)
     , EventMessageAttachmentType       (..)
+    -- * Functions
+    , extractMessagingEvents
 ) where
     
 import           Control.Monad (when)
@@ -74,8 +77,8 @@ instance FromJSON EventMessage where
                   evtSenderId    <- o .: "sender" >>= (.: "id")
                   evtRecipientId <- o .: "recipient" >>= (.: "id")
                   evtTimestamp   <- o .:? "timestamp"
-                  -- not too clean but seems to do the job
-                  -- if we refactor, it's faster if we get the first true only
+                  -- not too clean but does the job
+                  -- if we refactor, it's maybe faster if we get the first true only
                   let evtChoices = filter (`member` o) (["message", "optin", "delivery", "postback"]::[Text])
                   when (null evtChoices) $ 
                     fail "unknown message content"
@@ -83,6 +86,10 @@ instance FromJSON EventMessage where
                   evtContent <- o .: head evtChoices 
                   return EventMessage{..}
 
+-- | Helper to extract all messaging events from the 'RemoteEventList' in the 
+--   webhook call body
+extractMessagingEvents :: RemoteEventList -> [EventMessage]
+extractMessagingEvents (RemoteEventList res) = concatMap evt_messaging res
 
 data EventMessageContent = EmTextMessage Text Int Text       -- ^ Message ID; Message sequence number; Message text. 
                          | EmStructuredMessage Text Int [EventMessageAttachment] -- ^ Message ID; Message sequence number; Array containing attachment data (image, video, audio)
