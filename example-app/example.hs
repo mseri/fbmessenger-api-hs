@@ -19,6 +19,7 @@ import Network.Wai.Handler.Warp
 import Network.Wai.Logger (withStdoutLogger)
 import Servant
 import System.Environment
+import System.Exit (exitFailure)
 import System.IO
 import Text.Printf (printf)
 import Web.FBMessenger.API.Bot
@@ -90,9 +91,10 @@ main = do
     env <- getEnvironment
     let port = maybe 3000 read $ lookup "PORT" env
     let verifyToken = fromMaybe "" $ lookup "VERIFY_TOKEN" env
-    when (verifyToken == "") 
-         (putStrLn "[WARN]: Please set VERIFY_TOKEN to a safe string")
+    when (verifyToken == "") $ do
+      putStrLn "[WARN]: Please set VERIFY_TOKEN to a safe string"
+      exitFailure
     putStrLn $ printf "[INFO]: Server listening on port %i" port
     withStdoutLogger $ \aplogger -> do
-        let settings = setPort port $ setLogger aplogger defaultSettings
-        runSettings settings (app verifyToken)
+      let settings = setPort port $ setLogger aplogger defaultSettings
+      runSettings settings (app verifyToken)
