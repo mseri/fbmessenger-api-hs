@@ -3,8 +3,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Concurrent (forkIO, threadDelay)
-import Control.Monad (when, forever)
+import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except (ExceptT)
 import qualified Data.ByteString.Lazy.Char8 as C
