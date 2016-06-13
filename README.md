@@ -1,5 +1,7 @@
 # FBMessenger API
 
+[![Build Status](https://travis-ci.org/mseri/fbmessenger-api-hs.svg?branch=master)](https://travis-ci.org/mseri/fbmessenger-api-hs)
+
 High-level bindings to the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform/) based on [servant](https://haskell-servant.github.io/) library.
 We try to maintain the overall structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
 
