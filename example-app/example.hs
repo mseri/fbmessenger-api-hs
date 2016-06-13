@@ -83,7 +83,7 @@ server verifyTokenStored pageTokenStored =
       return (T.pack logMsg)
 
 app :: String -> String -> Application
-app verifyToken pageToke = serve webHookAPI $ server verifyToken pageToken 
+app verifyToken pageToken = serve webHookAPI $ server verifyToken pageToken 
 
 main :: IO ()
 main = do
