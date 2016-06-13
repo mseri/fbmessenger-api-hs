@@ -54,11 +54,14 @@ executable example
                     ,  http-client
                     ,  http-client-tls
                     ,  fbmessenger-api
+                    ,  monad-logger
                     ,  servant == 0.7.*
                     ,  servant-server == 0.7.*
                     ,  stm
                     ,  text
                     ,  transformers
+                    ,  wai
+                    ,  wai-logger
                     ,  warp
   default-language:   Haskell2010
 

@@ -7,13 +7,16 @@ import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except (ExceptT)
 import qualified Data.ByteString.Lazy.Char8 as C
+--import Data.Either (either)
 import Data.Foldable (traverse_)
 import Data.Maybe (fromMaybe)
 import Data.Proxy
 import qualified Data.Text as T
 import Network.HTTP.Client (newManager)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
+import Network.Wai
 import Network.Wai.Handler.Warp
+import Network.Wai.Logger (withStdoutLogger)
 import Servant
 import System.Environment
 import System.IO
@@ -31,7 +34,7 @@ type WebHookAPI = "webhook" :>
 webHookAPI :: Proxy WebHookAPI
 webHookAPI = Proxy
 
--- TODO: use monad-logger for logging
+-- TODO: use monad-logger to implement proper logging
 
 server :: String -> Server WebHookAPI
 server verifyTokenStored = 
@@ -44,12 +47,14 @@ server verifyTokenStored =
     webhook_verify tk ch = let
       eB :: String
       eB = printf "[ERROR]: wrong validation request. Got (token, challenge) = (%s, %s)" (show tk) (show ch)
-      in throwError err500 { errBody = C.pack eB}
+      in do 
+        liftIO $ putStrLn eB
+        throwError err500 { errBody = C.pack eB}
 
     webhook_message :: RemoteEventList -> ExceptT ServantErr IO String
     webhook_message (RemoteEventList res) = do
       r <- traverse echoMessage (concatMap evt_messaging res)
-      liftIO $ traverse_ (putStrLn . show) r
+      liftIO $ traverse_ (putStrLn . T.unpack) r
       return "{\"status\":\"fulfilled\"}"
 
     token = Token $ T.pack verifyTokenStored
@@ -58,7 +63,7 @@ server verifyTokenStored =
     echoMessage msg = do
       case evtContent msg of
         EmTextMessage _ _ text -> liftIO $ echoTextMessage text (evtSenderId msg) 
-        _                      -> return "[LOG]: this is just an example, no complex message is echoed."
+        _                      -> return "[WARN]: this is just an example, no complex message is echoed."
     
     echoTextMessage text rcptId = do 
       m <- newManager tlsManagerSettings
@@ -68,10 +73,16 @@ server verifyTokenStored =
       -- prepare the Send API request body 
       let messageReq = sendTextMessageRequest Nothing rcpt text
       -- finally send the message request using the tls http connection manager  
-      logMsg <- sendTextMessage (Just token) messageReq m
-      return (T.pack $ "[LOG]: sending " ++ T.unpack text ++ " to " ++ show rcpt 
-                       ++ ".\n [LOG]: response" ++ show logMsg)
-    
+      logRsp <- sendTextMessage (Just token) messageReq m
+      -- restructure the response to get a decent log out of it
+      -- e.g. one could add the response or the error in the log message
+      let logMsg = either (\_ -> printf "[ERROR]: failed to echo message")
+                          (\_ -> printf "[INFO]: sent \"%s\" to %s" (T.unpack text) (show rcpt))
+                          logRsp
+      return (T.pack logMsg)
+
+app :: String -> Application
+app = serve webHookAPI . server
 
 main :: IO ()
 main = do
@@ -79,6 +90,9 @@ main = do
     env <- getEnvironment
     let port = maybe 3000 read $ lookup "PORT" env
     let verifyToken = fromMaybe "" $ lookup "VERIFY_TOKEN" env
-    when (verifyToken == "") (putStrLn "[WARN]: Please set VERIFY_TOKEN to a safe string")
-    putStrLn $ "[LOG]: Server listening on port " ++ show port
-    run port $ serve webHookAPI $ server verifyToken 
+    when (verifyToken == "") 
+         (putStrLn "[WARN]: Please set VERIFY_TOKEN to a safe string")
+    putStrLn $ printf "[INFO]: Server listening on port %i" port
+    withStdoutLogger $ \aplogger -> do
+        let settings = setPort port $ setLogger aplogger defaultSettings
+        runSettings settings (app verifyToken)
