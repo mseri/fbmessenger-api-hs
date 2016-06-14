@@ -5,7 +5,9 @@
 High-level bindings to the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform/) based on [servant](https://haskell-servant.github.io/) library.
 We try to maintain the overall structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
 
-This library is alpha software and the api could change to improve composability, ergonomicity and ease of use. We recommend using stack for dealing with this library.
+There was an incongruence between the spec and the actual serialization of the webhook requests that became apparent when testing an actual messenger bot. For this reason you should **use only versions of the library that are `>= 0.1.1`**!
+
+This library is alpha software and the API design could change to improve composability, ergonomicity and ease of use. We recommend using `stack` for dealing with this library (you will need to add it to the `extra-deps` in `stack.yaml`).
 
 <!-- Useful links: 
 - [servant tutorial](http://haskell-servant.readthedocs.io/en/stable/tutorial)
