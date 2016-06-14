@@ -11,7 +11,7 @@ copyright:           2016 Marcello Seri, Federico Rampazzo
 category:            Web
 build-type:          Simple
 stability:           Experimental
--- extra-source-files:
+extra-source-files:  README.md
 cabal-version:       >=1.10
 data-files:          test-files/*.json
 
