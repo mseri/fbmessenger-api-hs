@@ -24,7 +24,7 @@ run acBSLn name = unsafePerformIO $ do
 
 spec :: Spec
 spec = do
-    let pid = 111111
+    let pid = "111111"
     let sid = "USER_ID"
     let rid = "PAGE_ID"
     

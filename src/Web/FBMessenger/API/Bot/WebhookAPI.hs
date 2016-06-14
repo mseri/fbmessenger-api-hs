@@ -41,7 +41,7 @@ instance FromJSON RemoteEventList where
 
 
 data RemoteEvent = RemoteEvent
-    { evt_id        :: Int              -- ^ Page ID of page 
+    { evt_id        :: Text             -- ^ Page ID of page 
     , evt_time      :: Int              -- ^ Time of update
     , evt_messaging :: [EventMessage]   -- ^ Array containing objects related to messaging
     } deriving (Show, Eq, Generic)
