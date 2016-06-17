@@ -1,6 +1,10 @@
 # FBMessenger API
 
 [![Build Status](https://travis-ci.org/mseri/fbmessenger-api-hs.svg?branch=master)](https://travis-ci.org/mseri/fbmessenger-api-hs)
+![Hackage](https://img.shields.io/hackage/v/fbmessenger-api.svg)
+![Hackage Dependencies](https://img.shields.io/hackage-deps/v/fbmessenger-api.svg)
+![Haskell Programming Language](https://img.shields.io/badge/language-Haskell-blue.svg)
+![BSD3 License](http://img.shields.io/badge/license-BSD3-brightgreen.svg)
 
 High-level bindings to the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform/) based on [servant](https://haskell-servant.github.io/) library.
 We try to maintain the overall structure compatible with [telegram-api](https://github.com/klappvisor/haskell-telegram-api).
