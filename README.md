@@ -26,27 +26,35 @@ This library is alpha software and the API design could change to improve compos
 Before being able to test and use the bot, you will need to verify your key. 
 The example app in `example-app/example.hs` contains a servant server that implements the verification and a trivial echo-server.
 You can run it with
-    
-    VERIFY_TOKEN="your_token_goes_here" stack exec example  
+
+```{.bash}
+VERIFY_TOKEN="your_token_goes_here" stack exec example  
+```
 
 and pass it some data (here assuming you have `httpie` installed)
 
-    http get 'localhost:3000/webhook/?hub.verify_token=your_token_goes_here&hub.challenge=test'
-    http post :3000/webhook < test-files/wsTextMessageRequest.json
+```{.bash}
+http get 'localhost:3000/webhook/?hub.verify_token=your_token_goes_here&hub.challenge=test'
+http post :3000/webhook < test-files/wsTextMessageRequest.json
+```
 
 Otherwise run `stack ghci` then copy and paste the following
 
-    :m +Network.HTTP.Client
-    :m +Network.HTTP.Client.TLS
-    :m +Data.Text
-    
-    let token = Token $ Data.Text.pack "your_token_goes_here"
-    let manager = newManager tlsManagerSettings
-    manager >>= \m -> subscribedApps $ Just token m
+```{.haskell}
+:m +Network.HTTP.Client
+:m +Network.HTTP.Client.TLS
+:m +Data.Text
+
+let token = Token $ Data.Text.pack "your_token_goes_here"
+let manager = newManager tlsManagerSettings
+manager >>= \m -> subscribedApps $ Just token m
+```
 
 You should get a positive response or (in case of inactive token): 
 
-    Left (FailureResponse {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseContentType = application/json, responseBody = "{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"ESxHmUos2B+\"}}"})
+```{.haskell}
+Left (FailureResponse {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseContentType = application/json, responseBody = "{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"ESxHmUos2B+\"}}"})
+```
 
 # Contribution
 
@@ -55,7 +63,7 @@ You should get a positive response or (in case of inactive token):
 3. Create pull request
 4. Wait for CI build and review
 
-You can use stack to build project
+You can use stack to build the project
 
     stack build
 
