@@ -72,7 +72,7 @@ instance ToJSON Recipient where
 instance FromJSON Recipient where
     parseJSON = parseJsonDrop 10
 
--- | Take reciptient id (optional) or phone_number (optional) and return a Maybe Recipient object.
+-- | Take reciptient id (optional) or phone_number (optional) and return a 'Maybe Recipient' object.
 --   Return Nothing when values are either both (Just _) or both Nothing.  
 recipient :: Maybe Text -> Maybe Text -> Maybe Recipient
 recipient Nothing Nothing   = Nothing
@@ -82,7 +82,7 @@ recipient rid phone_number  = pure $ Recipient rid phone_number
 
 -- | Push notification type for the message
 data NotificationType = Regular        -- ^ will emit a sound/vibration and a phone notification (default)
-                      | SilentPush     -- ^ will just emit a phone notification
+                      | SilentPush     -- ^ will emit a phone notification
                       | NoPush         -- ^ will not emit either
                       deriving (Eq, Show)
 
@@ -116,7 +116,7 @@ instance FromJSON SendTextMessageRequest where
       SendTextMessageRequest <$> o .: "recipient" <*> t <*> o .:? "notification_type"
     
 -- | Take a notification type (optional), a recipient and a text. 
---   Return a SendTextMessageRequest. 
+--   Return a 'SendTextMessageRequest'. 
 --   Raise an error if the text is longer than 320 characters.
 sendTextMessageRequest :: Maybe NotificationType -> Recipient -> Text -> SendTextMessageRequest
 sendTextMessageRequest notificationType recipient text 
@@ -244,7 +244,7 @@ instance FromJSON AttachmentWrapper where
         _  -> fail "impossible to parse the attachment wrapper type" 
 
 
--- | Type for Button objects. See Button type for additional informations.
+-- | Type for 'Button' objects. See 'Button' type for additional informations.
 data ButtonType = WebUrl | Postback deriving (Eq, Show)
 
 instance ToJSON ButtonType where
@@ -256,7 +256,7 @@ instance FromJSON ButtonType where
   parseJSON "postback" = pure Postback
   parseJSON _          = fail "Failed to parse ButtonType"
 
--- | Button object for structured messages payloads
+-- | 'Button' object for structured messages payloads
 data Button = Button 
   { btn_type    :: ButtonType   -- ^ Value is "web_url" or "postback"
   , btn_title   :: Text         -- ^ Button title
@@ -347,7 +347,7 @@ instance FromJSON PaymentSummary where
   parseJSON = parseJsonDrop 3
   
 paymentSummary :: Double -> PaymentSummary
-paymentSummary totalCost = PaymentSummary Nothing Nothing Nothing totalCost 
+paymentSummary totalCost = PaymentSummary Nothing Nothing Nothing totalCost
 
 data PaymentAdjustment = PaymentAdjustment
   { pa_name   :: Maybe Text     -- ^ Name of adjustment
@@ -377,31 +377,32 @@ instance FromJSON SendStructuredMessageRequest where
       SendStructuredMessageRequest <$> o .: "recipient" <*> aw <*> o .:? "notification_type"
  
 -- | Take a notification type (optional), a recipient, an image url.
---   Return a SendStructuredMessageRequest for a structured message with image attachment
+--   Return a 'SendStructuredMessageRequest' for a structured message with image attachment
 sendImageMessageRequest :: Maybe NotificationType -> Recipient -> Text -> SendStructuredMessageRequest
 sendImageMessageRequest notificationType recipient imgUrl = 
   SendStructuredMessageRequest recipient attachment notificationType
   where attachment = ItImage $ ImagePayload imgUrl
 
--- | Take a notification type (optional), a recipient, a list of ButtonElement.
---   Return a SendStructuredMessageRequest for a structured message with generic template
+-- | Take a notification type (optional), a recipient, a list of 'ButtonElement'.
+--   Return a 'SendStructuredMessageRequest' for a structured message with generic template
 sendGenericTemplateMessageRequest :: Maybe NotificationType -> Recipient -> [BubbleElement]  -> SendStructuredMessageRequest
 sendGenericTemplateMessageRequest notificationType recipient bubbles = 
   SendStructuredMessageRequest recipient attachment notificationType
   where attachment = ItGeneric $ GenericTemplate bubbles 
 
--- | Take a notification type (optional), a recipient, the text of the message and a list of buttons (they will appear as call-to-actions).
---   Return a SendStructuredMessageRequest for a structured message with button template
+-- | Take a notification type (optional), a recipient, the text of the message and a list of 
+--   buttons (they will appear as call-to-actions).
+--   Return a 'SendStructuredMessageRequest' for a structured message with button template
 sendButtonTemplateMessageRequest :: Maybe NotificationType -> Recipient -> Text -> [Button]  -> SendStructuredMessageRequest
 sendButtonTemplateMessageRequest notificationType recipient text buttons = 
   SendStructuredMessageRequest recipient attachment notificationType
   where attachment = ItButton $ ButtonTemplate text buttons
 
--- | Take a notification type (optional), a recipient and all the informations needed to construct a ReceiptTemplate object.
+-- | Take a notification type (optional), a recipient and all the informations needed to construct a 'ReceiptTemplate' object.
 --   Namely: the recipient name, the order number (must be unique), the currency, the payment method, the timestamp (optional), 
 --   the order url (optional), a list with the receipt items, the shipping address (optional), the payment summary and, 
 --   finally, a list of payment adjustments (optional).
---   Return a SendStructuredMessageRequest for a structured message with receipt template
+--   Return a 'SendStructuredMessageRequest' for a structured message with receipt template
 sendReceiptTemplateMessageRequest :: Maybe NotificationType -> Recipient -> Text -> Text -> Text -> Text -> Maybe Text
                                            -> Maybe Text -> [ReceiptItem] -> Maybe ShippingAddress -> PaymentSummary -> Maybe [PaymentAdjustment]
                                            -> SendStructuredMessageRequest
@@ -433,19 +434,19 @@ setWelcomeTextMessageRequest :: Text -> WelcomeMessageRequest
 setWelcomeTextMessageRequest = WelcomeTextMessage 
 
 -- | Take an image url.
---   Return a WelcomeMessageRequest for a structured message with image attachment
+--   Return a 'WelcomeMessageRequest' for a structured message with image attachment
 setWelcomeImageMessageRequest :: Text -> WelcomeMessageRequest
 setWelcomeImageMessageRequest imgUrl = WelcomeStructuredMessage attachment
   where attachment = ItImage $ ImagePayload imgUrl 
 
 -- | Take a list of ButtonElement.
---   Return a WelcomeMessageRequest for a structured message with generic template
+--   Return a 'WelcomeMessageRequest' for a structured message with generic template
 setWelcomeGenericTemplateMessageRequest :: [BubbleElement]  -> WelcomeMessageRequest
 setWelcomeGenericTemplateMessageRequest bubbles = WelcomeStructuredMessage attachment
   where attachment = ItGeneric $ GenericTemplate bubbles 
 
 -- | Take the text of the message and a list of buttons (they will appear as call-to-actions).
---   Return a WelcomeMessageRequest for a structured message with button template
+--   Return a 'WelcomeMessageRequest' for a structured message with button template
 setWelcomeButtonTemplateMessageRequest :: Text -> [Button]  -> WelcomeMessageRequest
 setWelcomeButtonTemplateMessageRequest text buttons = WelcomeStructuredMessage attachment
   where attachment = ItButton $ ButtonTemplate text buttons
@@ -466,7 +467,7 @@ data FileUpload = FileUpload
   , fileUpload_content :: FileUploadContent -- ^ The payload/source to upload.
   }
 
--- | Return a FileUpload from a given FilePath. 
+-- | Return a 'FileUpload' from a given 'FilePath'. 
 --   At the moment, only png and jpg images are supported by the API.
 localFileUpload :: FilePath -> FileUpload
 localFileUpload path = FileUpload
@@ -505,7 +506,7 @@ instance FromJSON (UploadImageMessageRequest Text) where
 -- sendImageMessageRequest :: Recipient -> Text -> UploadImageMessageRequest Text
 -- sendImageMessageRequest reciptient image = UploadImageMessageRequest recipient image emptyImageMessageAttachment
 
--- | Take a recipient and FileUpload (relative to a jpg or png). Return a (UploadImageMessageRequest FileUpload) 
+-- | Take a 'Recipient' and 'FileUpload' (relative to a jpg or png). Return a ('UploadImageMessageRequest FileUpload') 
 --   for a structured message contatining and image uploaded using multipart form data. 
 uploadImageMessageRequest :: Recipient -> FileUpload -> UploadImageMessageRequest FileUpload
 uploadImageMessageRequest = UploadImageMessageRequest

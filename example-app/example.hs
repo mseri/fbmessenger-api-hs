@@ -61,7 +61,7 @@ server verifyTokenStored pageTokenStored =
     token = Token $ T.pack pageTokenStored
 
     echoMessage :: EventMessage -> ExceptT ServantErr IO T.Text
-    echoMessage msg = do
+    echoMessage msg =
       case evtContent msg of
         EmTextMessage _ _ text -> liftIO $ echoTextMessage text (evtSenderId msg) 
         _                      -> return "[WARN]: this is just an example, no complex message is echoed."

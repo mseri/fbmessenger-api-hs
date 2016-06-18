@@ -99,7 +99,7 @@ performRequestCT' reqToRequest' ct reqMethod req manager reqHost = do
   let acceptCT = contentType ct
   (_status, respBody, respCT, hdrs, _response) <-
     performRequest' reqToRequest' reqMethod (req { reqAccept = [acceptCT] }) manager reqHost
-  unless (matches respCT (acceptCT)) $ throwE $ UnsupportedContentType respCT respBody
+  unless (matches respCT acceptCT) $ throwE $ UnsupportedContentType respCT respBody
   case mimeUnrender ct respBody of
     Left err -> throwE $ DecodeFailure err respCT respBody
     Right val -> return (hdrs, val)

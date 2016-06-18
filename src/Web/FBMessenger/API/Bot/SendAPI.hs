@@ -37,7 +37,7 @@ newtype Token = Token Text
    deriving (Show, Eq, Ord, ToHttpApiData, FromHttpApiData)
 
 -- | Type for token
--- NOTE: QueryParam here gives us a Maybe Token
+-- NOTE: 'QueryParam' here gives us a 'Maybe Token'
 type GraphAPIAccessToken = QueryParam "access_token" Token
 
 
@@ -95,32 +95,41 @@ sendTextMessage_
 sendTextMessage :: Maybe Token -> SendTextMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendTextMessage = run graphAPIBaseUrl sendTextMessage_
 
--- | Upload an image and send a structured messages containing it. On success, minor informations on the sent message are returned.
+-- | Upload an image and send a structured messages containing it. 
+--   On success, minor informations on the sent message are returned.
 uploadImageMessage :: Maybe Token -> UploadImageMessageRequest FileUpload -> Manager -> IO (Either ServantError MessageResponse)
 uploadImageMessage = run graphAPIBaseUrl uploadImageMessage_
 
--- | Send a structured messages. This can be an image message (containing an image url) or any template message (generic, button, receipt).  
+-- | Send a structured messages. This can be an image message (containing an image url) 
+--   or any template message (generic, button, receipt).  
 --   On success, minor informations on the sent message are returned.
 sendStructuredMessage :: Maybe Token -> SendStructuredMessageRequest -> Manager -> IO (Either ServantError MessageResponse)
 sendStructuredMessage = run graphAPIBaseUrl sendStructuredMessage_
 
 -- | Test if your bot's auth token is enabled. Requires no parameters.
---   Return a simple object containing a boolean value indicating if the token is correctly registered.
+--   Return a simple object containing a boolean value indicating if the 
+--   token is correctly registered.
 subscribedApps :: Maybe Token -> Manager -> IO (Either ServantError SubscriptionResponse)
 subscribedApps token manager = runExceptT $ subscribedApps_ token manager graphAPIBaseUrl
 
--- | Set a welcome message, this can be an image message (containing an image url) or any template message (generic, button, receipt).
---   In addition to the token and the message request, you need to provide the facebook page_id.
---   Return a simple object containing a string indicating if the welcome message is correctly registered.
+-- | Set a welcome message, this can be an image message (containing an image url) 
+--   or any template message (generic, button, receipt).
+--   In addition to the token and the message request, you need to provide the 
+--   facebook page_id.
+--   Return a simple object containing a string indicating if the welcome message 
+--   is correctly registered.
 setWelcomeMessage :: Maybe Token -> Text -> WelcomeMessageRequest -> Manager -> IO (Either ServantError WelcomeMessageResponse)
 setWelcomeMessage token pageId message manager = runExceptT $ welcomeMessage_ token pageId message manager graphAPIBaseUrl
 
--- | Remove the welcome message. In addition to the token, you need to provide the facebook page_id.
---   Return a simple object containing a string indicating if the welcome message is correctly removed.
+-- | Remove the welcome message. In addition to the token, you need to provide 
+--   the facebook page_id.
+--   Return a simple object containing a string indicating if the welcome 
+--   message is correctly removed.
 removeWelcomeMessage :: Maybe Token -> Text -> Manager -> IO (Either ServantError WelcomeMessageResponse)
 removeWelcomeMessage token pageId manager = runExceptT $ deleteWMessage_ token pageId welcomeDeleteMessage manager graphAPIBaseUrl
 
--- | Get the profile informations of a user. In addition to the token, you need to provide the user_id.
+-- | Get the profile informations of a user. In addition to the token, you need
+--   to provide the user_id.
 --   Return a record containing the profile informations.
 getUserProfileInfo :: Maybe Token -> Text -> Manager -> IO (Either ServantError UserProfileResponse)
 getUserProfileInfo token userId manager = runExceptT $ userProfile_ token userProfileFields userId manager graphAPIBaseUrl

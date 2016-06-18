@@ -130,17 +130,16 @@ instance FromJSON SendErrorCode where
   parseJSON _            = fail "Unable to parse SendErrorCode" 
 
 
--- | Take a Send API error object and return a tuple containing the error code and the error_data (seems to always be the description)
+-- | Take a Send API error object and return a tuple containing the error code 
+--   and the error_data (seems to always be the description)
 errorInfo :: SendErrorObject -> (SendErrorCode, Text)
 errorInfo err = (ecode, edata) 
   where edata = eoErrorData err
         ecode = eoCode err
 
--- | Extracts a Send API Error object from the ServantError (when possible).
+-- | Extracts a Send API Error object from the 'ServantError' (when possible).
 extractSendError :: ServantError -> Maybe SendErrorObject
 extractSendError FailureResponse{ responseStatus = _, responseContentType = _
                                 , responseBody = body 
-                                } = do
-                                  eo <- decode body :: Maybe SendErrorObject
-                                  return eo
+                                } = decode body :: Maybe SendErrorObject
 extractSendError _ = Nothing
