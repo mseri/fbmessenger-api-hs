@@ -1,12 +1,21 @@
+-- |
+-- Module      : Web.FBMessenger.API.Bot.Requests 
+-- License     : BSD3
+-- Maintainer  : Marcello Seri <marcello.seri@gmail.com>
+-- Stability   : experimental
+-- Portability : unknown
+--
+-- This module contains types and helpers to parse the responses from the
+-- <https://developers.facebook.com/docs/messenger-platform/ Messenger Platform API>. 
+-- See also 'Web.FBMessenger.API.Bot.SendAPI'.
+--
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TypeOperators              #-}
-
 {-# OPTIONS_GHC -fno-warn-unused-binds  #-}
 
--- | This module contains responses from Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Responses 
   ( -- * Types 
     MessageResponse        (..)

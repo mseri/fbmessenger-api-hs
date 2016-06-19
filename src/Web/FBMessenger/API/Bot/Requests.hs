@@ -1,3 +1,14 @@
+-- |
+-- Module      : Web.FBMessenger.API.Bot.Requests 
+-- License     : BSD3
+-- Maintainer  : Marcello Seri <marcello.seri@gmail.com>
+-- Stability   : experimental
+-- Portability : unknown
+--
+-- This module contains types and helpers to build requests to the
+-- <https://developers.facebook.com/docs/messenger-platform/ Messenger Platform API> 
+-- to use with 'Web.FBMessenger.API.Bot.SendAPI'.
+--
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -7,7 +18,6 @@
 
 {-# OPTIONS_GHC -fno-warn-unused-binds  #-}
 
--- | This module contains data objects which represents requests to Messenger Platform Bot API
 module Web.FBMessenger.API.Bot.Requests 
     ( -- * Types
       Button                       (..)

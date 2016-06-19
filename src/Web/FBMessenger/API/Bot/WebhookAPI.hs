@@ -1,3 +1,15 @@
+-- |
+-- Module      : Web.FBMessenger.API.Bot.Requests 
+-- License     : BSD3
+-- Maintainer  : Marcello Seri <marcello.seri@gmail.com>
+-- Stability   : experimental
+-- Portability : unknown
+--
+-- This module contains types and helpers to parse the webhook requests coming
+-- from the <https://developers.facebook.com/docs/messenger-platform/ Messenger Platform API>. 
+-- You can find a complete example with the source code of this library on
+-- <https://github.com/mseri/fbmessenger-api-hs/blob/master/example-app/example.hs github>.
+-- 
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -28,6 +40,7 @@ import           Web.FBMessenger.API.Bot.JsonExt
 --        * try to cleanup and simplify the API and the data representation 
 --        * consider adding useful getters and a mapper from [RemoteEvents] -> [EventMessage]
 
+-- | This type wraps the content of a webhook request
 data RemoteEventList = RemoteEventList [RemoteEvent] deriving (Eq, Show)
 instance ToJSON RemoteEventList where
     toJSON (RemoteEventList evts) = object [ "object" .= ("page"::String), "entry" .= evts ]
@@ -39,7 +52,8 @@ instance FromJSON RemoteEventList where
                   evts <- o .: "entry"
                   return (RemoteEventList evts)
 
-
+-- | A webhook request contains a list of 'RemoteEvents', objects containing 
+--   an id, a time and a list of messaging events.
 data RemoteEvent = RemoteEvent
     { evt_id        :: Text             -- ^ Page ID of page 
     , evt_time      :: Int              -- ^ Time of update
@@ -51,7 +65,8 @@ instance ToJSON RemoteEvent where
 instance FromJSON RemoteEvent where
     parseJSON = parseJsonDrop 4
 
-
+-- | This is an event message, for additional information refer to the official
+--   Messenger Platform API.
 data EventMessage = EventMessage 
     { evtSenderId    :: Text            -- ^ Sender user ID
     , evtRecipientId :: Text            -- ^ Recipient user ID

@@ -1,8 +1,8 @@
 name:                fbmessenger-api
-version:             0.1.1.0
+version:             0.1.1.1
 synopsis:            High-level bindings to Facebook Messenger Platform API
 description:         Please see README.md
-homepage:            https://github.com/mseri/fbmessenger-api-hs#readme
+homepage:            https://github.com/mseri/fbmessenger-api-hs#fbmessenger-api
 license:             BSD3
 license-file:        LICENSE
 author:              Marcello Seri

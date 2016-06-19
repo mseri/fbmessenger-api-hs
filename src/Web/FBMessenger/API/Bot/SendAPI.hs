@@ -1,3 +1,14 @@
+-- |
+-- Module      : Web.FBMessenger.API.Bot.Requests 
+-- License     : BSD3
+-- Maintainer  : Marcello Seri <marcello.seri@gmail.com>
+-- Stability   : experimental
+-- Portability : unknown
+--
+-- This module contains a 'servant' client for the 
+-- <https://developers.facebook.com/docs/messenger-platform/ Messenger Platform API>
+-- and helpers useful to construct the appropriate requests and parse the responses.
+--
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}

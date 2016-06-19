@@ -73,5 +73,6 @@ To run tests
 
 # TODO
 
-- Tests for the network part of the api (hard, requires a bot setted up and permanently running)
+- Tests for the network part of the api (hard, requires a bot setted up and permanently running just for the tests)
+- Check if assumption on https://github.com/mseri/fbmessenger-api-hs/blob/master/src/Web/FBMessenger/API/Bot/WebhookAPI.hs#L99 is safe
 - Cleanup Webhooks API Requests and add higher level helpers
