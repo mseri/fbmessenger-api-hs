@@ -54,21 +54,21 @@ type GraphAPIAccessToken = QueryParam "access_token" Token
 
 -- Servant.Client.BaseUrl
 graphAPIBaseUrl :: BaseUrl
-graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "/v2.6/me"
+graphAPIBaseUrl = BaseUrl Https "graph.facebook.com" 443 "/v2.6"
 
 
 -- | Messenger Platform Send API
 type FBMessengerSendAPI = 
-         GraphAPIAccessToken :> "messages" 
+         GraphAPIAccessToken :> "me" :> "messages" 
          :> ReqBody '[JSON] SendTextMessageRequest
          :> Post '[JSON] MessageResponse
-    :<|> GraphAPIAccessToken :> "messages"
+    :<|> GraphAPIAccessToken :> "me" :> "messages"
          :> MultipartFormDataReqBody (UploadImageMessageRequest FileUpload)
          :> Post '[JSON] MessageResponse
-    :<|> GraphAPIAccessToken :> "messages" 
+    :<|> GraphAPIAccessToken :> "me" :> "messages" 
          :> ReqBody '[JSON] SendStructuredMessageRequest
          :> Post '[JSON] MessageResponse
-    :<|> GraphAPIAccessToken :> "subscribed_apps"
+    :<|> GraphAPIAccessToken :> "me" :> "subscribed_apps"
          :> Post '[JSON] SubscriptionResponse
     :<|> GraphAPIAccessToken :> Capture "page_id" Text :> "thread_settings"
          :> ReqBody '[JSON] WelcomeMessageRequest
