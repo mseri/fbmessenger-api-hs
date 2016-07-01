@@ -13,13 +13,7 @@ There was an incongruence between the spec and the actual serialization of the w
 
 This library is alpha software and the API design could change to improve composability, ergonomicity and ease of use. We recommend using `stack` for dealing with this library (you will need to add it to the `extra-deps` in `stack.yaml`).
 
-<!-- Useful links: 
-- [servant tutorial](http://haskell-servant.readthedocs.io/en/stable/tutorial)
-- [simple python bindings for the messenger api](https://github.com/geeknam/messengerbot)
-- [bytemyapp](http://bitemyapp.com/archive.html)
-- [aeson tutorial](https://artyom.me/aeson)
-- [haskell is easy](https://haskelliseasy.readthedocs.io/en/latest/)
-/ -->
+NOTE (1.6.2016): the WelcomeMessageSendAPI recently changed. The Platform no-longer accepts any welcome message api-wise (only a custom payload is now allowed). The library will be updated to reflect this change as soon as I can (otherwise you are welcome to submit a PR). For the moment you can setup/modify the Welcome Message in the online interface.
 
 # Usage
 
