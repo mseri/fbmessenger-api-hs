@@ -47,10 +47,10 @@ module Web.FBMessenger.API.Bot.Requests
     , sendImageMessageRequest
     , sendReceiptTemplateMessageRequest
     , sendTextMessageRequest
-    , setWelcomeButtonTemplateMessageRequest
-    , setWelcomeGenericTemplateMessageRequest
-    , setWelcomeImageMessageRequest
-    , setWelcomeTextMessageRequest
+    -- , setWelcomeButtonTemplateMessageRequest
+    -- , setWelcomeGenericTemplateMessageRequest
+    -- , setWelcomeImageMessageRequest
+    -- , setWelcomeTextMessageRequest
     , uploadImageMessageRequest
     , webUrlButton
 ) where

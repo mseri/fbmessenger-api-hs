@@ -13,16 +13,16 @@ There was an incongruence between the spec and the actual serialization of the w
 
 This library is alpha software and the API design could change to improve composability, ergonomicity and ease of use. We recommend using `stack` for dealing with this library (you will need to add it to the `extra-deps` in `stack.yaml`).
 
-NOTE (1.6.2016): the WelcomeMessageSendAPI recently changed. The Platform no-longer accepts any welcome message api-wise (only a custom payload is now allowed). The library will be updated to reflect this change as soon as I can (otherwise you are welcome to submit a PR). For the moment you can setup/modify the Welcome Message in the online interface.
+NOTE (1.6.2016): the WelcomeMessageSendAPI recently changed. The Platform no-longer accepts any welcome message api-wise (only a custom payload is now allowed). The library will be updated to reflect this change as soon as I can (otherwise you are welcome to submit a PR). To setup/modify the Welcome Message you have to use the online interface.
 
 # Usage
 
-Before being able to test and use the bot, you will need to verify your key. 
+Before being able to test and use the bot, you will need to verify your key.
 The example app in `example-app/example.hs` contains a servant server that implements the verification and a trivial echo-server.
 You can run it with
 
 ```{.bash}
-VERIFY_TOKEN="your_token_goes_here" stack exec example  
+VERIFY_TOKEN="your_token_goes_here" stack exec example
 ```
 
 and pass it some data (here assuming you have `httpie` installed)
@@ -44,7 +44,7 @@ let manager = newManager tlsManagerSettings
 manager >>= \m -> subscribedApps $ Just token m
 ```
 
-You should get a positive response or (in case of inactive token): 
+You should get a positive response or (in case of inactive token):
 
 ```{.haskell}
 Left (FailureResponse {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseContentType = application/json, responseBody = "{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"ESxHmUos2B+\"}}"})

@@ -1,5 +1,5 @@
 name:                fbmessenger-api
-version:             0.1.2.0
+version:             0.1.2.1
 synopsis:            High-level bindings to Facebook Messenger Platform API
 description:         Please see README.md
 homepage:            https://github.com/mseri/fbmessenger-api-hs#fbmessenger-api
@@ -36,7 +36,7 @@ library
                      , transformers
                      , unordered-containers
                      -- for Servant.Client.MultipartFormData and interaction with it
-                     , http-media         
+                     , http-media
                      , http-types
                      , mime-types
                      , string-conversions
