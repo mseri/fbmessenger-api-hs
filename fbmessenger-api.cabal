@@ -30,8 +30,8 @@ library
                      , aeson
                      , bytestring
                      , http-client
-                     , servant == 0.7.*
-                     , servant-client == 0.7.*
+                     , servant >= 0.7.0
+                     , servant-client >= 0.7.0
                      , text
                      , transformers
                      , unordered-containers
@@ -55,8 +55,8 @@ executable example
                     ,  http-client-tls
                     ,  fbmessenger-api
                     ,  monad-logger
-                    ,  servant == 0.7.*
-                    ,  servant-server == 0.7.*
+                    ,  servant >= 0.7.0
+                    ,  servant-server >= 0.7.0
                     ,  stm
                     ,  text
                     ,  transformers
