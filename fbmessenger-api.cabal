@@ -30,10 +30,10 @@ library
                      , aeson
                      , bytestring
                      , http-client
-                     , servant >= 0.7.0
-                     , servant-client >= 0.7.0
+                     , servant        >= 0.9 && < 0.10
+                     , servant-client >= 0.9 && < 0.10
                      , text
-                     , transformers
+                     , mtl
                      , unordered-containers
                      -- for Servant.Client.MultipartFormData and interaction with it
                      , http-media
@@ -55,11 +55,11 @@ executable example
                     ,  http-client-tls
                     ,  fbmessenger-api
                     ,  monad-logger
-                    ,  servant >= 0.7.0
-                    ,  servant-server >= 0.7.0
+                    ,  servant        >= 0.9 && < 0.10
+                    ,  servant-server >= 0.9 && < 0.10
                     ,  stm
                     ,  text
-                    ,  transformers
+                    ,  mtl
                     ,  wai
                     ,  wai-logger
                     ,  warp
